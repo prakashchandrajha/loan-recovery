@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
 import { LoginComponent } from './login.component';
-import { DivisionDashboardComponent } from './dashboard/division-dashboard.component';
-import { RecoveryDashboardComponent } from './dashboard/recovery-dashboard.component';
-import { LegalDashboardComponent } from './dashboard/legal-dashboard.component';
-import { OfficerDashboardComponent } from './dashboard/officer-dashboard.component';
-import { AdminDashboardComponent } from './dashboard/admin-dashboard.component';
+import { DivisionDashboardComponent } from './features/dashboard/division-dashboard/division-dashboard.component';
+import { RecoveryDashboardComponent } from './features/dashboard/recovery-dashboard/recovery-dashboard.component';
+import { LegalDashboardComponent } from './features/dashboard/legal-dashboard/legal-dashboard.component';
+import { OfficerDashboardComponent } from './features/dashboard/officer-dashboard/officer-dashboard.component';
+import { AdminDashboardComponent } from './features/dashboard/admin-dashboard/admin-dashboard.component';
 import { AuthGuard } from './auth/auth.guard';
 import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
 
