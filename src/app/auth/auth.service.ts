@@ -8,12 +8,15 @@ import { MOCK_USERS } from './mock-users';
 export class AuthService {
   private currentUser: any;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
   login(username: string) {
     const user = MOCK_USERS.find(u => u.username === username);
     if (user) {
       this.currentUser = user;
+      localStorage.setItem('userRole', user.role);
+      localStorage.setItem('userName', user.username);
+
       switch (user.role) {
         case 'Division':
           this.router.navigate(['/division-dashboard']);
@@ -39,6 +42,8 @@ export class AuthService {
 
   logout() {
     this.currentUser = null;
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userName');
     this.router.navigate(['/']);
   }
 

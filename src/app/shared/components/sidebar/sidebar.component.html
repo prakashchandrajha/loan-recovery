@@ -1,0 +1,20 @@
+<div [class.translate-x-0]="isOpen" [class.-translate-x-full]="!isOpen"
+    class="fixed inset-y-0 left-0 z-30 w-64 transform bg-white transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 border-r border-gray-200 shadow-lg lg:shadow-none">
+    <div class="flex h-16 items-center justify-center border-b border-gray-200">
+        <span class="text-2xl font-bold text-blue-600">NPA<span class="text-gray-800">System</span></span>
+    </div>
+
+    <nav class="mt-5 px-2">
+        <a *ngFor="let item of filteredMenuItems" [routerLink]="item.link" routerLinkActive="bg-blue-50 text-blue-600"
+            class="group mt-1 flex items-center rounded-md px-2 py-2 text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+
+            <svg [class.text-blue-600]="false"
+                class="mr-4 h-6 w-6 text-gray-400 group-hover:text-gray-500 group-[.active]:text-blue-600"
+                xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="item.icon" />
+            </svg>
+            {{ item.label }}
+        </a>
+    </nav>
+</div>

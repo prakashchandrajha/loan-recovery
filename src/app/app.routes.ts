@@ -6,12 +6,20 @@ import { LegalDashboardComponent } from './dashboard/legal-dashboard.component';
 import { OfficerDashboardComponent } from './dashboard/officer-dashboard.component';
 import { AdminDashboardComponent } from './dashboard/admin-dashboard.component';
 import { AuthGuard } from './auth/auth.guard';
+import { MainLayoutComponent } from './shared/components/main-layout/main-layout.component';
 
 export const routes: Routes = [
   { path: '', component: LoginComponent },
-  { path: 'division-dashboard', component: DivisionDashboardComponent, canActivate: [AuthGuard] },
-  { path: 'recovery-dashboard', component: RecoveryDashboardComponent, canActivate: [AuthGuard] },
-  { path: 'legal-dashboard', component: LegalDashboardComponent, canActivate: [AuthGuard] },
-  { path: 'officer-dashboard', component: OfficerDashboardComponent, canActivate: [AuthGuard] },
-  { path: 'admin-dashboard', component: AdminDashboardComponent, canActivate: [AuthGuard] }
+  {
+    path: '',
+    component: MainLayoutComponent,
+    canActivate: [AuthGuard],
+    children: [
+      { path: 'division-dashboard', component: DivisionDashboardComponent },
+      { path: 'recovery-dashboard', component: RecoveryDashboardComponent },
+      { path: 'legal-dashboard', component: LegalDashboardComponent },
+      { path: 'officer-dashboard', component: OfficerDashboardComponent },
+      { path: 'admin-dashboard', component: AdminDashboardComponent }
+    ]
+  }
 ];
