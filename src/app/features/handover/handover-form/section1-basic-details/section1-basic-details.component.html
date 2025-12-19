@@ -1,0 +1,33 @@
+<div [formGroup]="section1" class="space-y-4">
+    <h3 class="text-lg font-medium text-gray-900 border-b pb-2">1. Basic Details</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Borrower Name *</label>
+            <input type="text" formControlName="borrowerName"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2">
+            <div *ngIf="section1.get('borrowerName')?.touched && section1.get('borrowerName')?.invalid"
+                class="text-red-500 text-xs mt-1">
+                Borrower Name is required
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Loan Account No. *</label>
+            <input type="text" formControlName="loanAccountNo"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Branch *</label>
+            <input type="text" formControlName="branch"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2">
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium text-gray-700">Region</label>
+            <input type="text" formControlName="region"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm border p-2">
+        </div>
+    </div>
+</div>

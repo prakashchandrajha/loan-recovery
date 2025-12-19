@@ -1,0 +1,98 @@
+<div class="space-y-6">
+    <!-- Progress Bar -->
+    <div class="relative">
+        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+            <div [style.width.%]="(currentStep / totalSteps) * 100"
+                class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-500 transition-all duration-300">
+            </div>
+        </div>
+        <div class="flex justify-between text-xs text-gray-500">
+            <span>Step {{ currentStep }} of {{ totalSteps }}</span>
+            <span>{{ steps[currentStep - 1].name }}</span>
+        </div>
+    </div>
+
+    <!-- Main Form Area -->
+    <div class="bg-white rounded-lg shadow p-6 min-h-[400px]">
+        <form [formGroup]="handoverForm">
+
+            <!-- Section 1 -->
+            <div *ngIf="currentStep === 1">
+                <app-section1-basic-details [parentForm]="handoverForm"></app-section1-basic-details>
+            </div>
+
+            <div *ngIf="currentStep === 2">
+                <app-section2-facility [parentForm]="handoverForm"></app-section2-facility>
+            </div>
+
+            <div *ngIf="currentStep === 3">
+                <app-section3-security [parentForm]="handoverForm"></app-section3-security>
+            </div>
+
+            <div *ngIf="currentStep === 4">
+                <app-section4-valuation [parentForm]="handoverForm"></app-section4-valuation>
+            </div>
+
+            <div *ngIf="currentStep === 5">
+                <app-section5-documentation [parentForm]="handoverForm"></app-section5-documentation>
+            </div>
+
+            <div *ngIf="currentStep === 6">
+                <app-section6-release [parentForm]="handoverForm"></app-section6-release>
+            </div>
+
+            <div *ngIf="currentStep === 7">
+                <app-section7-pdc [parentForm]="handoverForm"></app-section7-pdc>
+            </div>
+
+            <div *ngIf="currentStep === 8">
+                <app-section8-repayment [parentForm]="handoverForm"></app-section8-repayment>
+            </div>
+
+            <div *ngIf="currentStep === 9">
+                <app-section9-restructuring [parentForm]="handoverForm"></app-section9-restructuring>
+            </div>
+
+            <div *ngIf="currentStep === 10">
+                <app-section10-revised-schedule [parentForm]="handoverForm"></app-section10-revised-schedule>
+            </div>
+
+            <div *ngIf="currentStep === 11">
+                <app-section11-sarfaesi [parentForm]="handoverForm"></app-section11-sarfaesi>
+            </div>
+
+            <div *ngIf="currentStep === 12">
+                <app-section12-pending-cases [parentForm]="handoverForm"></app-section12-pending-cases>
+            </div>
+
+            <div *ngIf="currentStep === 13">
+                <app-section13-correspondence [parentForm]="handoverForm"></app-section13-correspondence>
+            </div>
+
+            <div *ngIf="currentStep === 14">
+                <app-section14-remarks [parentForm]="handoverForm"></app-section14-remarks>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="flex justify-between">
+        <button (click)="previous()" [disabled]="currentStep === 1"
+            class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+            Previous
+        </button>
+
+        <div class="flex gap-3">
+            <button *ngIf="currentStep < totalSteps" (click)="next()"
+                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">
+                Next
+            </button>
+
+            <button *ngIf="currentStep === totalSteps" (click)="submit()"
+                class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                Submit Handover
+            </button>
+        </div>
+    </div>
+</div>

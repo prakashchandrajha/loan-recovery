@@ -16,6 +16,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       { path: 'division-dashboard', component: DivisionDashboardComponent },
+      { path: 'create-handover', loadComponent: () => import('./features/handover/handover-form/handover-form.component').then(m => m.HandoverFormComponent) },
       { path: 'recovery-dashboard', component: RecoveryDashboardComponent },
       { path: 'legal-dashboard', component: LegalDashboardComponent },
       { path: 'officer-dashboard', component: OfficerDashboardComponent },
