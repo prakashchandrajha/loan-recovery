@@ -1,12 +1,23 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
+import { importProvidersFrom } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { routes } from './app.routes';
+import { LoginComponent } from './login.component';
+import { DivisionDashboardComponent } from './dashboard/division-dashboard.component';
+import { RecoveryDashboardComponent } from './dashboard/recovery-dashboard.component';
+import { LegalDashboardComponent } from './dashboard/legal-dashboard.component';
+import { OfficerDashboardComponent } from './dashboard/officer-dashboard.component';
+import { AdminDashboardComponent } from './dashboard/admin-dashboard.component';
+import { AuthService } from './auth/auth.service';
+import { AuthGuard } from './auth/auth.guard';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(routes)
+    provideRouter(routes),
+    importProvidersFrom(FormsModule, ReactiveFormsModule),
+    AuthService,
+    AuthGuard
   ]
 };
