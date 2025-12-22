@@ -2,6 +2,6 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-division-dashboard',
-  template: '<h1>Division Dashboard</h1>'
+  templateUrl: './division-dashboard.component.html'
 })
-export class DivisionDashboardComponent {}
+export class DivisionDashboardComponent { }

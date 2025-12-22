@@ -2,6 +2,6 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-legal-dashboard',
-  template: '<h1>Legal Dashboard</h1>'
+  templateUrl: './legal-dashboard.component.html'
 })
-export class LegalDashboardComponent {}
+export class LegalDashboardComponent { }

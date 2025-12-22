@@ -2,6 +2,6 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-recovery-dashboard',
-  template: '<h1>Recovery Dashboard</h1>'
+  templateUrl: './recovery-dashboard.component.html'
 })
-export class RecoveryDashboardComponent {}
+export class RecoveryDashboardComponent { }
