@@ -24,7 +24,7 @@
   <!-- Main Content -->
   <main class="flex-1 overflow-y-auto p-8">
 
-    <!-- Header for Mobile -->
+    <!-- Mobile Header -->
     <div class="md:hidden mb-6 flex justify-between items-center">
       <h1 class="text-xl font-bold text-gray-800">Division Panel</h1>
       <div class="flex space-x-2">
@@ -36,9 +36,8 @@
     <!-- Form View -->
     <div *ngIf="currentView === 'form'" class="max-w-2xl mx-auto">
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-
         <h2 class="text-2xl font-bold text-gray-800 mb-6">
-          {{ editingIndex !== null ? 'Update Recovery Entry' : 'New Recovery Entry' }}
+          {{ editingEntryId ? 'Update Recovery Entry' : 'New Recovery Entry' }}
         </h2>
 
         <form (ngSubmit)="onSubmit()">
@@ -66,16 +65,15 @@
           <!-- Actions -->
           <button type="submit"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors shadow-sm flex justify-center items-center space-x-2">
-            <span>{{ editingIndex !== null ? 'Update Entry' : 'Send to Recovery Division' }}</span>
+            <span>{{ editingEntryId ? 'Update Entry' : 'Send to Recovery Division' }}</span>
             <span>→</span>
           </button>
 
-          <button *ngIf="editingIndex !== null" type="button" (click)="resetForm(); currentView='list'"
+          <button *ngIf="editingEntryId" type="button" (click)="resetForm(); currentView='list'"
             class="w-full mt-3 text-gray-500 hover:text-gray-700 py-2">
             Cancel
           </button>
         </form>
-
       </div>
     </div>
 
@@ -83,7 +81,7 @@
     <div *ngIf="currentView === 'list'" class="max-w-6xl mx-auto">
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-          <h2 class="text-lg font-bold text-gray-800">Submitted Entries</h2>
+          <h2 class="text-lg font-bold text-gray-800">Submitted Files</h2>
           <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
             Total: {{ entries.length }}
           </span>
@@ -93,18 +91,18 @@
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
-                <th class="px-6 py-4 font-semibold border-b">Sl. No</th>
-                <th class="px-6 py-4 font-semibold border-b">Full Name</th>
-                <th class="px-6 py-4 font-semibold border-b">Mobile Number</th>
+                <th class="px-6 py-4 font-semibold border-b">File Details</th>
                 <th class="px-6 py-4 font-semibold border-b">Status</th>
+                <th class="px-6 py-4 font-semibold border-b w-1/3">Journey Log</th>
                 <th class="px-6 py-4 font-semibold border-b text-right">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr *ngFor="let entry of entries; let i = index" class="hover:bg-gray-50 transition-colors">
-                <td class="px-6 py-4 text-gray-500">#{{ i + 1 }}</td>
-                <td class="px-6 py-4 font-medium text-gray-800">{{ entry.fullName }}</td>
-                <td class="px-6 py-4 text-gray-600">{{ entry.mobileNumber }}</td>
+                <td class="px-6 py-4">
+                  <div class="font-medium text-gray-800">{{ entry.fullName }}</div>
+                  <div class="text-sm text-gray-500">{{ entry.mobileNumber }}</div>
+                </td>
                 <td class="px-6 py-4">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                     [class.bg-green-100]="entry.status === 'Pending'"
@@ -113,26 +111,54 @@
                     {{ entry.status }}
                   </span>
                 </td>
-                <td class="px-6 py-4 text-right space-x-2">
-                  <button (click)="markUrgent(i)" title="Urgent Send"
-                    class="p-1.5 text-red-600 hover:bg-red-50 rounded transition">
-                    🚀
-                  </button>
-                  <button (click)="editEntry(i)" title="Edit"
-                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
-                    ✏️
-                  </button>
-                  <button (click)="deleteEntry(i)" title="Delete"
-                    class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
-                    🗑️
-                  </button>
+                <td class="px-6 py-4 text-sm text-gray-500">
+                  <!-- History Stack -->
+                  <div class="space-y-2">
+                    <div *ngFor="let log of entry.history" class="flex items-start space-x-2 text-xs">
+                      <div class="mt-0.5 w-1.5 h-1.5 rounded-full"
+                        [ngClass]="{'bg-blue-400': log.location==='Division', 'bg-purple-400': log.location==='Recovery'}">
+                      </div>
+                      <div>
+                        <span class="font-semibold text-gray-700">{{ log.location }}</span>
+                        <span class="text-gray-400 mx-1">•</span>
+                        <span>{{ log.action }}</span>
+                        <div class="text-gray-400 text-[10px]">{{ log.timestamp | date:'short' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 text-right space-x-2 align-top">
+
+                  <!-- Only show actions if file is still in Division -->
+                  <ng-container *ngIf="entry.currentLocation === 'Division'; else readOnlyActions">
+                    <button (click)="markUrgent(entry.id)" title="Urgent Send"
+                      class="p-1.5 text-red-600 hover:bg-red-50 rounded transition">
+                      🚀
+                    </button>
+                    <button (click)="editEntry(entry)" title="Edit"
+                      class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
+                      ✏️
+                    </button>
+                    <button (click)="deleteEntry(entry.id)" title="Delete"
+                      class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
+                      🗑️
+                    </button>
+                  </ng-container>
+
+                  <ng-template #readOnlyActions>
+                    <span
+                      class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
+                      🔒 Transferred
+                    </span>
+                  </ng-template>
+
                 </td>
               </tr>
               <tr *ngIf="entries.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                   <div class="flex flex-col items-center justify-center space-y-3">
                     <span class="text-4xl">📭</span>
-                    <p>No entries submitted yet.</p>
+                    <p>No active files in Division.</p>
                     <button (click)="switchView('form')" class="text-blue-600 hover:underline text-sm">Create new
                       entry</button>
                   </div>
@@ -142,20 +168,6 @@
           </table>
         </div>
       </div>
-
-      <!-- Legend -->
-      <div class="mt-4 p-4 text-sm text-gray-500 flex items-center space-x-6 justify-center">
-        <div class="flex items-center space-x-2">
-          <span class="w-3 h-3 bg-red-100 border border-red-200 rounded-full"></span>
-          <span>Urgent (Sent immediately)</span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <span class="w-3 h-3 bg-green-100 border border-green-200 rounded-full"></span>
-          <span>Pending (Wait 3 days)</span>
-        </div>
-      </div>
-
     </div>
-
   </main>
 </div>
