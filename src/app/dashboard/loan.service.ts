@@ -5,6 +5,8 @@ export interface LocationLog {
     location: 'Division' | 'Recovery';
     timestamp: Date;
     action: string; // e.g., "Created", "Sent Urgent", "Auto-Forwarded"
+    isLate?: boolean; // Flag to indicate if this log shows late status
+    daysLate?: number; // Number of days late (1, 2, etc.)
 }
 
 export interface PostEntry {
@@ -12,7 +14,9 @@ export interface PostEntry {
     divisionId: string; // Which division created this entry (div1, div2, div3, etc.)
     fullName: string;
     mobileNumber: string;
-    status: 'Pending' | 'Urgent';
+    npaDate: string; // NPA Date field
+    deadlineDate: Date; // 3 days deadline from NPA date
+    status: 'Pending' | 'Urgent' | 'Late';
     currentLocation: 'Division' | 'Recovery';
     history: LocationLog[];
 }
@@ -24,10 +28,16 @@ export class LoanService {
     private entriesSubject = new BehaviorSubject<PostEntry[]>([]);
     entries$ = this.entriesSubject.asObservable();
 
-    addEntry(entry: Omit<PostEntry, 'id' | 'history'>) {
+    addEntry(entry: Omit<PostEntry, 'id' | 'history' | 'deadlineDate'>) {
+        // Calculate deadline from NPA date (3 days)
+        const npaDate = new Date(entry.npaDate);
+        const deadlineDate = new Date(npaDate);
+        deadlineDate.setDate(deadlineDate.getDate() + 3); // 3 days deadline from NPA date
+        
         const newEntry: PostEntry = {
             ...entry,
             id: this.generateId(),
+            deadlineDate,
             history: [{
                 location: entry.currentLocation,
                 timestamp: new Date(),
@@ -69,8 +79,51 @@ export class LoanService {
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: isUrgent ? 'Urgent Transfer' : 'Standard Transfer'
+                action: isUrgent ? 'Transfer' : 'Standard Transfer'
             });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
+    // Check and update late status for entries
+    checkDeadlines() {
+        const currentEntries = this.entriesSubject.getValue();
+        let updated = false;
+        
+        currentEntries.forEach(entry => {
+            if (entry.currentLocation === 'Division') {
+                const now = new Date();
+                const deadline = new Date(entry.deadlineDate);
+                
+                // Calculate days late
+                const diffTime = now.getTime() - deadline.getTime();
+                const daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (daysLate > 0 && entry.status !== 'Late') {
+                    entry.status = 'Late';
+                    // Add late log
+                    entry.history.push({
+                        location: 'Division',
+                        timestamp: new Date(),
+                        action: `File is late ${daysLate} day${daysLate > 1 ? 's' : ''}`,
+                        isLate: true,
+                        daysLate: daysLate
+                    });
+                    updated = true;
+                } else if (daysLate > 0 && entry.status === 'Late') {
+                    // Update existing late entry with new day count
+                    const lastLateLog = entry.history[entry.history.length - 1];
+                    if (lastLateLog && lastLateLog.isLate && lastLateLog.daysLate !== daysLate) {
+                        lastLateLog.action = `File is late ${daysLate} day${daysLate > 1 ? 's' : ''}`;
+                        lastLateLog.daysLate = daysLate;
+                        lastLateLog.timestamp = new Date();
+                        updated = true;
+                    }
+                }
+            }
+        });
+        
+        if (updated) {
             this.entriesSubject.next([...currentEntries]);
         }
     }

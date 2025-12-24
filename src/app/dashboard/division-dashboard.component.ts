@@ -15,7 +15,8 @@ export class DivisionDashboardComponent implements OnInit {
 
   formData = {
     fullName: '',
-    mobileNumber: ''
+    mobileNumber: '',
+    npaDate: ''
   };
 
   entries: PostEntry[] = [];
@@ -33,6 +34,8 @@ export class DivisionDashboardComponent implements OnInit {
       if (currentUser) {
         this.entries = entries.filter(e => e.divisionId === currentUser.username);
       }
+      // Check deadlines for all entries
+      this.loanService.checkDeadlines();
     });
   }
 
@@ -44,7 +47,7 @@ export class DivisionDashboardComponent implements OnInit {
   }
 
   onSubmit() {
-    if (this.formData.fullName && this.formData.mobileNumber) {
+    if (this.formData.fullName && this.formData.mobileNumber && this.formData.npaDate) {
       const currentUser = this.authService.getCurrentUser();
       if (!currentUser) return;
 
@@ -54,6 +57,7 @@ export class DivisionDashboardComponent implements OnInit {
         if (entry) {
           entry.fullName = this.formData.fullName;
           entry.mobileNumber = this.formData.mobileNumber;
+          entry.npaDate = this.formData.npaDate;
           // Ideally call service.updateEntry(entry) to notify others, though object ref works locally
           this.loanService.updateEntry(entry);
         }
@@ -63,6 +67,7 @@ export class DivisionDashboardComponent implements OnInit {
           divisionId: currentUser.username, // Set to current user's division (div1, div2, etc.)
           fullName: this.formData.fullName,
           mobileNumber: this.formData.mobileNumber,
+          npaDate: this.formData.npaDate,
           status: 'Pending',
           currentLocation: 'Division'
         });
@@ -76,7 +81,8 @@ export class DivisionDashboardComponent implements OnInit {
     this.editingEntryId = entry.id;
     this.formData = {
       fullName: entry.fullName,
-      mobileNumber: entry.mobileNumber
+      mobileNumber: entry.mobileNumber,
+      npaDate: entry.npaDate || ''
     };
     this.currentView = 'form';
   }
@@ -95,7 +101,21 @@ export class DivisionDashboardComponent implements OnInit {
   }
 
   resetForm() {
-    this.formData = { fullName: '', mobileNumber: '' };
+    this.formData = { fullName: '', mobileNumber: '', npaDate: '' };
     this.editingEntryId = null;
+  }
+
+  // Helper methods for deadline tracking
+  isOverdue(entry: PostEntry): boolean {
+    const now = new Date();
+    const deadline = new Date(entry.deadlineDate);
+    return now > deadline;
+  }
+
+  getDaysOverdue(entry: PostEntry): number {
+    const now = new Date();
+    const deadline = new Date(entry.deadlineDate);
+    const diffTime = now.getTime() - deadline.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 }
