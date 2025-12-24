@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 export interface LocationLog {
-    location: 'Division' | 'Recovery';
+    location: 'Division' | 'Recovery' | 'Legal';
     timestamp: Date;
     action: string; // e.g., "Created", "Sent Urgent", "Auto-Forwarded"
     isLate?: boolean; // Flag to indicate if this log shows late status
@@ -16,8 +16,12 @@ export interface PostEntry {
     mobileNumber: string;
     npaDate: string; // NPA Date field
     deadlineDate: Date; // 3 days deadline from NPA date
-    status: 'Pending' | 'Urgent' | 'Late';
-    currentLocation: 'Division' | 'Recovery';
+    // Recovery Cell fields
+    remarks: string; // Remarks from Recovery cell
+    file13bName: string; // 13b form file name
+    file13bUploadDate: Date; // Upload date for 13b form
+    status: 'Pending' | 'Urgent' | 'Late' | 'With Recovery' | 'With Legal';
+    currentLocation: 'Division' | 'Recovery' | 'Legal';
     history: LocationLog[];
 }
 
@@ -28,7 +32,7 @@ export class LoanService {
     private entriesSubject = new BehaviorSubject<PostEntry[]>([]);
     entries$ = this.entriesSubject.asObservable();
 
-    addEntry(entry: Omit<PostEntry, 'id' | 'history' | 'deadlineDate'>) {
+    addEntry(entry: Omit<PostEntry, 'id' | 'history' | 'deadlineDate' | 'remarks' | 'file13bName' | 'file13bUploadDate'>) {
         // Calculate deadline from NPA date (3 days)
         const npaDate = new Date(entry.npaDate);
         const deadlineDate = new Date(npaDate);
@@ -38,6 +42,9 @@ export class LoanService {
             ...entry,
             id: this.generateId(),
             deadlineDate,
+            remarks: '',
+            file13bName: '',
+            file13bUploadDate: new Date(),
             history: [{
                 location: entry.currentLocation,
                 timestamp: new Date(),
@@ -79,7 +86,26 @@ export class LoanService {
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: isUrgent ? 'Transfer' : 'Standard Transfer'
+                action: isUrgent ? 'Urgent Transfer' : 'Standard Transfer'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
+    // Send entry from Recovery to Legal
+    moveToLegal(id: string, remarks: string, file13bName: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.remarks = remarks;
+            entry.file13bName = file13bName;
+            entry.file13bUploadDate = new Date();
+            entry.status = 'With Legal';
+            entry.currentLocation = 'Legal';
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: `13b Form Uploaded: ${file13bName}. Sent to Legal Cell. Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }

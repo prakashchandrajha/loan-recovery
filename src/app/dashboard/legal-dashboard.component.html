@@ -1,1 +1,73 @@
-<h1>Legal Dashboard</h1>
+<div class="p-8 bg-gray-50 h-screen overflow-y-auto">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Legal Cell Dashboard</h1>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-800">Files from Recovery</h2>
+            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                Total: {{ legalEntries.length }}
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
+                        <th class="px-6 py-4 font-semibold border-b">File Details</th>
+                        <th class="px-6 py-4 font-semibold border-b">NPA Date</th>
+                        <th class="px-6 py-4 font-semibold border-b">13b Form</th>
+                        <th class="px-6 py-4 font-semibold border-b">Remarks</th>
+                        <th class="px-6 py-4 font-semibold border-b">Journey History</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr *ngFor="let entry of legalEntries" class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-800">{{ entry.fullName }}</div>
+                            <div class="text-sm text-gray-500">{{ entry.mobileNumber }}</div>
+                            <div class="text-xs text-gray-400 mt-1">From: {{ entry.divisionId }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-700">{{ entry.npaDate }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div *ngIf="entry.file13bName" class="text-sm text-green-600 font-medium">
+                                ✓ {{ entry.file13bName }}
+                            </div>
+                            <div *ngIf="entry.file13bUploadDate" class="text-xs text-gray-500">
+                                Uploaded: {{ entry.file13bUploadDate | date:'short' }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-700 max-w-xs">{{ entry.remarks || '-' }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            <!-- History Stack -->
+                            <div class="space-y-2">
+                                <div *ngFor="let log of entry.history" class="flex items-start space-x-2 text-xs">
+                                    <div class="mt-0.5 w-1.5 h-1.5 rounded-full"
+                                        [ngClass]="{'bg-blue-400': log.location==='Division', 'bg-purple-400': log.location==='Recovery', 'bg-green-400': log.location==='Legal'}">
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-gray-700">{{ log.location }}</span>
+                                        <span class="text-gray-400 mx-1">•</span>
+                                        <span>{{ log.action }}</span>
+                                        <div class="text-gray-400 text-[10px]">{{ log.timestamp | date:'short' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="legalEntries.length === 0">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center space-y-3">
+                                <span class="text-4xl">📋</span>
+                                <p>No files from Recovery Cell.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
