@@ -1,7 +1,9 @@
 export const MOCK_USERS = [
-  { id: 1, username: 'Division User', role: 'Division', fullName: 'John Doe' },
-  { id: 2, username: 'Recovery User', role: 'Recovery', fullName: 'Jane Smith' },
-  { id: 3, username: 'Legal User', role: 'Legal', fullName: 'Mike Johnson' },
-  { id: 4, username: 'Officer User', role: 'AuthorizedOfficer', fullName: 'Sarah Williams' },
-  { id: 5, username: 'Admin User', role: 'Admin', fullName: 'Admin Admin' }
+  { id: 1, username: 'div1', password: 'div', role: 'Division', fullName: 'Division 1' },
+  { id: 2, username: 'div2', password: 'div2', role: 'Division', fullName: 'Division 2' },
+  { id: 3, username: 'div3', password: 'div3', role: 'Division', fullName: 'Division 3' },
+  { id: 4, username: 'recovery', password: 'password', role: 'Recovery', fullName: 'Recovery User' },
+  { id: 5, username: 'legal', password: 'password', role: 'Legal', fullName: 'Legal User' },
+  { id: 6, username: 'officer', password: 'password', role: 'AuthorizedOfficer', fullName: 'Officer User' },
+  { id: 7, username: 'admin', password: 'password', role: 'Admin', fullName: 'Admin User' }
 ];

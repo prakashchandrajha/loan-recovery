@@ -9,6 +9,7 @@ export interface LocationLog {
 
 export interface PostEntry {
     id: string; // Added ID for easier deletion
+    divisionId: string; // Which division created this entry (div1, div2, div3, etc.)
     fullName: string;
     mobileNumber: string;
     status: 'Pending' | 'Urgent';
@@ -36,6 +37,12 @@ export class LoanService {
 
         const currentEntries = this.entriesSubject.getValue();
         this.entriesSubject.next([...currentEntries, newEntry]);
+    }
+
+    // Get entries filtered by division
+    getEntriesByDivision(divisionId: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        return currentEntries.filter(e => e.divisionId === divisionId);
     }
 
     updateEntry(entry: PostEntry) {

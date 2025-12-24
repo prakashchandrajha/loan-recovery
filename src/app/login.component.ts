@@ -14,20 +14,27 @@ import { CommonModule } from '@angular/common';
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  users = MOCK_USERS;
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
-      username: ['', Validators.required]
+      username: ['', Validators.required],
+      password: ['', Validators.required]
     });
   }
 
   onSubmit() {
     if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value.username);
+      const { username, password } = this.loginForm.value;
+      const success = this.authService.login(username, password);
+      if (!success) {
+        this.errorMessage = 'Invalid username or password';
+      } else {
+        this.errorMessage = '';
+      }
     }
   }
 }

@@ -8,10 +8,10 @@ import { MOCK_USERS } from './mock-users';
 export class AuthService {
   private currentUser: any;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) { }
 
-  login(username: string) {
-    const user = MOCK_USERS.find(u => u.username === username);
+  login(username: string, password: string): boolean {
+    const user = MOCK_USERS.find(u => u.username === username && u.password === password);
     if (user) {
       this.currentUser = user;
       switch (user.role) {
@@ -34,7 +34,9 @@ export class AuthService {
           this.router.navigate(['/']);
           break;
       }
+      return true;
     }
+    return false;
   }
 
   logout() {

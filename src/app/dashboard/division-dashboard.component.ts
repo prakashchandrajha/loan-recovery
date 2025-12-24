@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoanService, PostEntry } from './loan.service';
+import { AuthService } from '../auth/auth.service';
 
 @Component({
   selector: 'app-division-dashboard',
@@ -20,12 +21,18 @@ export class DivisionDashboardComponent implements OnInit {
   entries: PostEntry[] = [];
   editingEntryId: string | null = null;
 
-  constructor(private loanService: LoanService) { }
+  constructor(
+    private loanService: LoanService,
+    private authService: AuthService
+  ) { }
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      // Show all entries in Division Dashboard regardless of current location
-      this.entries = entries;
+      // Filter entries to show only those belonging to current division
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser) {
+        this.entries = entries.filter(e => e.divisionId === currentUser.username);
+      }
     });
   }
 
@@ -38,6 +45,9 @@ export class DivisionDashboardComponent implements OnInit {
 
   onSubmit() {
     if (this.formData.fullName && this.formData.mobileNumber) {
+      const currentUser = this.authService.getCurrentUser();
+      if (!currentUser) return;
+
       if (this.editingEntryId) {
         // Find and update
         const entry = this.entries.find(e => e.id === this.editingEntryId);
@@ -50,6 +60,7 @@ export class DivisionDashboardComponent implements OnInit {
       } else {
         // Create new
         this.loanService.addEntry({
+          divisionId: currentUser.username, // Set to current user's division (div1, div2, etc.)
           fullName: this.formData.fullName,
           mobileNumber: this.formData.mobileNumber,
           status: 'Pending',
