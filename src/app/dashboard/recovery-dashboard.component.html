@@ -2,11 +2,25 @@
     <h1 class="text-2xl font-bold text-gray-800 mb-6">Recovery Division Dashboard</h1>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-            <h2 class="text-lg font-bold text-gray-800">Received Files</h2>
-            <span class="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
-                Total: {{ recoveryEntries.length }}
-            </span>
+        <div class="p-6 border-b border-gray-200 bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Received Files</h2>
+            <!-- Tabs -->
+            <div class="flex space-x-1 mb-4">
+                <button (click)="activeTab = 'division'"
+                    [class.bg-white]="activeTab === 'division'"
+                    [class.text-gray-700]="activeTab === 'division'"
+                    [class.shadow-sm]="activeTab === 'division'"
+                    class="px-4 py-2 text-sm font-medium text-gray-500 bg-gray-100 rounded-lg hover:bg-white hover:text-gray-700 transition">
+                    From Division ({{ divisionEntries.length }})
+                </button>
+                <button (click)="activeTab = 'legal'"
+                    [class.bg-white]="activeTab === 'legal'"
+                    [class.text-gray-700]="activeTab === 'legal'"
+                    [class.shadow-sm]="activeTab === 'legal'"
+                    class="px-4 py-2 text-sm font-medium text-gray-500 bg-gray-100 rounded-lg hover:bg-white hover:text-gray-700 transition">
+                    From Legal ({{ legalEntries.length }})
+                </button>
+            </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -21,7 +35,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    <tr *ngFor="let entry of recoveryEntries" class="hover:bg-gray-50 transition-colors">
+                    <tr *ngFor="let entry of activeEntries" class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4">
                             <div class="font-medium text-gray-800">{{ entry.fullName }}</div>
                             <div class="text-sm text-gray-500">{{ entry.mobileNumber }}</div>
@@ -98,11 +112,11 @@
 
                         </td>
                     </tr>
-                    <tr *ngIf="recoveryEntries.length === 0">
+                    <tr *ngIf="activeEntries.length === 0">
                         <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center space-y-3">
                                 <span class="text-4xl">📥</span>
-                                <p>No incoming files.</p>
+                                <p>No {{ activeTab === 'division' ? 'files from Division' : 'files from Legal' }}.</p>
                             </div>
                         </td>
                     </tr>

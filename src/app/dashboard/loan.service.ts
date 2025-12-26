@@ -122,6 +122,23 @@ export class LoanService {
         }
     }
 
+    // Send entry back from Legal to Recovery
+    moveBackToRecovery(id: string, remarks: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.remarks = remarks;
+            entry.currentLocation = 'Recovery';
+            // Reset recovery deadline if needed, or keep
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: `Sent back to Recovery from Legal. Remarks: ${remarks}`
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
     // Send entry from Legal to Regional Office
     moveToRegional(id: string, regionalOffice: string) {
         const currentEntries = this.entriesSubject.getValue();

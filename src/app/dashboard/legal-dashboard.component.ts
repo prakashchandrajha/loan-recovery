@@ -16,13 +16,12 @@ export class LegalDashboardComponent implements OnInit {
   file13bName: string = '';
   isUploadMode: boolean = false;
   isEditRemarksMode: boolean = false;
-  selectedRegionalOffice: string = '';
 
   constructor(private loanService: LoanService) { }
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.legalEntries = entries.filter(e => e.history.some(log => log.location === 'Legal'));
+      this.legalEntries = entries.filter(e => e.currentLocation === 'Legal');
     });
   }
 
@@ -42,11 +41,10 @@ export class LegalDashboardComponent implements OnInit {
     this.isUploadMode = false;
   }
 
-  forwardEntry(entry: PostEntry) {
+  sendBackEntry(entry: PostEntry) {
     this.selectedEntry = entry;
     this.remarks = entry.remarks || '';
     this.file13bName = entry.file13bName || '';
-    this.selectedRegionalOffice = '';
     this.isEditRemarksMode = false;
     this.isUploadMode = false;
   }
@@ -57,7 +55,6 @@ export class LegalDashboardComponent implements OnInit {
     this.file13bName = '';
     this.isUploadMode = false;
     this.isEditRemarksMode = false;
-    this.selectedRegionalOffice = '';
   }
 
   updateEntry() {
@@ -70,13 +67,12 @@ export class LegalDashboardComponent implements OnInit {
     }
   }
 
-  sendToRegional() {
-    if (this.selectedEntry && this.selectedRegionalOffice) {
-      // Assume moveToRegional method exists
-      this.loanService.moveToRegional(this.selectedEntry.id, this.selectedRegionalOffice);
-      this.closeModal();
-    } else {
-      alert('Please select a regional office');
+  sendBackToRecovery() {
+    if (this.selectedEntry) {
+      if (confirm('Send this file back to Recovery Cell?')) {
+        this.loanService.moveBackToRecovery(this.selectedEntry.id, this.remarks);
+        this.closeModal();
+      }
     }
   }
 

@@ -10,19 +10,26 @@ import { LoanService, PostEntry } from './loan.service';
   templateUrl: './recovery-dashboard.component.html'
 })
 export class RecoveryDashboardComponent implements OnInit {
-  recoveryEntries: PostEntry[] = [];
+  divisionEntries: PostEntry[] = [];
+  legalEntries: PostEntry[] = [];
   selectedEntry: PostEntry | null = null;
   remarks: string = '';
   file13bName: string = '';
   isEditMode: boolean = false;
   isUploadMode: boolean = false;
   isEditRemarksMode: boolean = false;
+  activeTab: 'division' | 'legal' = 'division';
 
   constructor(private loanService: LoanService) { }
 
+  get activeEntries(): PostEntry[] {
+    return this.activeTab === 'division' ? this.divisionEntries : this.legalEntries;
+  }
+
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.recoveryEntries = entries.filter(e => e.history.some(log => log.location === 'Recovery'));
+      this.divisionEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'Division') && !e.history.some(log => log.location === 'Legal'));
+      this.legalEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'Legal'));
     });
   }
 
