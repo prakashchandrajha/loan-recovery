@@ -113,6 +113,11 @@ export class LoanService {
                 timestamp: new Date(),
                 action: `13b Form Uploaded: ${file13bName}. Sent to Legal Cell. Remarks: ${remarks}`
             });
+            entry.history.push({
+                location: 'Legal',
+                timestamp: new Date(),
+                action: 'Received from Recovery'
+            });
             this.entriesSubject.next([...currentEntries]);
         }
     }
@@ -241,3 +246,4 @@ export class LoanService {
         return Math.random().toString(36).substr(2, 9);
     }
 }
+
