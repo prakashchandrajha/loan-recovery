@@ -22,7 +22,7 @@ export class LegalDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.legalEntries = entries.filter(e => e.currentLocation === 'Legal');
+      this.legalEntries = entries.filter(e => e.history.some(log => log.location === 'Legal'));
     });
   }
 
