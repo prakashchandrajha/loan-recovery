@@ -72,18 +72,30 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 text-right space-x-2">
-                            <button (click)="uploadEntry(entry)" title="Upload File"
-                                class="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition">
-                                📎
-                            </button>
-                            <button (click)="editRemarksEntry(entry)" title="Edit Remarks"
-                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
-                                ✏️
-                            </button>
-                            <button (click)="forwardEntry(entry)" title="Forward to Legal"
-                                class="p-1.5 text-green-600 hover:bg-green-50 rounded transition">
-                                📤
-                            </button>
+
+                            <!-- Only show actions if file is still in Recovery -->
+                            <ng-container *ngIf="entry.currentLocation === 'Recovery'; else readOnlyActions">
+                                <button (click)="uploadEntry(entry)" title="Upload File"
+                                    class="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition">
+                                    📎
+                                </button>
+                                <button (click)="editRemarksEntry(entry)" title="Edit Remarks"
+                                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
+                                    ✏️
+                                </button>
+                                <button (click)="forwardEntry(entry)" title="Forward to Legal"
+                                    class="p-1.5 text-green-600 hover:bg-green-50 rounded transition">
+                                    📤
+                                </button>
+                            </ng-container>
+
+                            <ng-template #readOnlyActions>
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
+                                    🔒 Forwarded to Legal
+                                </span>
+                            </ng-template>
+
                         </td>
                     </tr>
                     <tr *ngIf="recoveryEntries.length === 0">
