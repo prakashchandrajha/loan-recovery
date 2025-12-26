@@ -129,11 +129,18 @@ export class LoanService {
         if (entry) {
             entry.remarks = remarks;
             entry.currentLocation = 'Recovery';
-            // Reset recovery deadline if needed, or keep
+            // Set 1 day deadline for Recovery to forward to RO
+            entry.recoveryDeadline = new Date();
+            entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 1);
+            entry.history.push({
+                location: 'Legal',
+                timestamp: new Date(),
+                action: `Sent back to Recovery. Remarks: ${remarks}`
+            });
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: `Sent back to Recovery from Legal. Remarks: ${remarks}`
+                action: 'Received back from Legal'
             });
             this.entriesSubject.next([...currentEntries]);
         }

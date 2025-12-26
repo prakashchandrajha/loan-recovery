@@ -19,6 +19,8 @@ export class RecoveryDashboardComponent implements OnInit {
   isUploadMode: boolean = false;
   isEditRemarksMode: boolean = false;
   activeTab: 'division' | 'legal' = 'division';
+  isSendToRO: boolean = false;
+  selectedRegionalOffice: string = 'RegionalOffice1';
 
   constructor(private loanService: LoanService) { }
 
@@ -58,6 +60,7 @@ export class RecoveryDashboardComponent implements OnInit {
     this.isEditMode = false;
     this.isUploadMode = false;
     this.isEditRemarksMode = false;
+    this.isSendToRO = this.activeTab === 'legal';
   }
 
   closeModal() {
@@ -67,6 +70,8 @@ export class RecoveryDashboardComponent implements OnInit {
     this.isEditMode = false;
     this.isUploadMode = false;
     this.isEditRemarksMode = false;
+    this.isSendToRO = false;
+    this.selectedRegionalOffice = 'RegionalOffice1';
   }
 
   onFileSelected(event: any) {
@@ -94,6 +99,15 @@ export class RecoveryDashboardComponent implements OnInit {
       }
     } else {
       alert('Please upload 13b form before sending to Legal Cell');
+    }
+  }
+
+  sendToRegional() {
+    if (this.selectedEntry) {
+      if (confirm('Send this file to Regional Office?')) {
+        this.loanService.moveToRegional(this.selectedEntry.id, this.selectedRegionalOffice);
+        this.closeModal();
+      }
     }
   }
 
