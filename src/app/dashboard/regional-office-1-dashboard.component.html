@@ -1,0 +1,158 @@
+<div class="p-8 bg-gray-50 h-screen overflow-y-auto">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Regional Office 1 Dashboard</h1>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+            <h2 class="text-lg font-bold text-gray-800">Received Files</h2>
+            <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                Total: {{ regionalEntries.length }}
+            </span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
+                        <th class="px-6 py-4 font-semibold border-b">File Details</th>
+                        <th class="px-6 py-4 font-semibold border-b">NPA Date</th>
+                        <th class="px-6 py-4 font-semibold border-b">Status</th>
+                        <th class="px-6 py-4 font-semibold border-b">Journey History</th>
+                        <th class="px-6 py-4 font-semibold border-b">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    <tr *ngFor="let entry of regionalEntries" class="hover:bg-gray-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="font-medium text-gray-800">{{ entry.fullName }}</div>
+                            <div class="text-sm text-gray-500">{{ entry.mobileNumber }}</div>
+                            <div *ngIf="entry.file13bName" class="mt-1 text-xs text-green-600">
+                                ✓ 13b: {{ entry.file13bName }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-700">{{ entry.npaDate }}</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                [class.bg-green-100]="entry.status === 'Pending'"
+                                [class.text-green-800]="entry.status === 'Pending'"
+                                [class.bg-red-100]="entry.status === 'Urgent'"
+                                [class.text-red-800]="entry.status === 'Urgent'"
+                                [class.bg-yellow-100]="entry.status === 'Late'"
+                                [class.text-yellow-800]="entry.status === 'Late'">
+                                {{ entry.status }}
+                            </span>
+                            <!-- Deadline Display -->
+                            <div class="mt-2 text-xs" [ngClass]="{'text-red-600': isOverdue(entry), 'text-gray-500': !isOverdue(entry)}">
+                                <span *ngIf="isOverdue(entry)" class="font-medium">
+                                  Overdue by {{ getDaysOverdue(entry) }} day{{ getDaysOverdue(entry) > 1 ? 's' : '' }}
+                                </span>
+                                <span *ngIf="!isOverdue(entry)">
+                                  Due: {{ entry.regionalDeadline | date:'MMM d, y' }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            <!-- History Stack -->
+                            <div class="space-y-2">
+                                <div *ngFor="let log of entry.history" class="flex items-start space-x-2 text-xs"
+                                    [class.bg-red-50]="log.isLate"
+                                    [class.pr-2]="log.isLate"
+                                    [class.rounded]="log.isLate">
+                                    <div class="mt-0.5 w-1.5 h-1.5 rounded-full"
+                                        [ngClass]="{'bg-blue-400': log.location==='Division', 'bg-purple-400': log.location==='Recovery', 'bg-green-400': log.location==='Legal', 'bg-orange-400': log.location==='RegionalOffice1', 'bg-red-500': log.isLate}">
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-gray-700">{{ log.location }}</span>
+                                        <span class="text-gray-400 mx-1">•</span>
+                                        <span [class.text-red-600]="log.isLate" [class.font-medium]="log.isLate">{{ log.action }}</span>
+                                        <div class="text-gray-400 text-[10px]">{{ log.timestamp | date:'short' }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-right space-x-2">
+
+                            <!-- Only show actions if file is still in Regional Office 1 -->
+                            <ng-container *ngIf="entry.currentLocation === 'RegionalOffice1'; else readOnlyActions">
+                                <button (click)="uploadEntry(entry)" title="Upload File"
+                                    class="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition">
+                                    📎
+                                </button>
+                                <button (click)="editRemarksEntry(entry)" title="Edit Remarks"
+                                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
+                                    ✏️
+                                </button>
+                            </ng-container>
+
+                            <ng-template #readOnlyActions>
+                                <span
+                                    class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
+                                    🔒 Completed
+                                </span>
+                            </ng-template>
+
+                        </td>
+                    </tr>
+                    <tr *ngIf="regionalEntries.length === 0">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            <div class="flex flex-col items-center justify-center space-y-3">
+                                <span class="text-4xl">📥</span>
+                                <p>No incoming files.</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Processing File -->
+<div *ngIf="selectedEntry" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-bold text-gray-800">
+                {{ isUploadMode ? 'Upload File' : 'Edit Remarks' }} - {{ selectedEntry.fullName }}
+            </h3>
+            <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <span class="text-2xl">×</span>
+            </button>
+        </div>
+
+        <div class="p-6">
+            <!-- 13b Form Upload -->
+            <div *ngIf="isUploadMode" class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Upload 13b Form</label>
+                <div class="relative">
+                    <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
+                    <span class="absolute right-3 top-3.5 text-gray-400">📎</span>
+                </div>
+                <div *ngIf="file13bName" class="mt-2 text-sm text-green-600">
+                    ✓ Selected: {{ file13bName }}
+                </div>
+            </div>
+
+            <!-- Remarks -->
+            <div *ngIf="isUploadMode || isEditRemarksMode" class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
+                <textarea [(ngModel)]="remarks" placeholder="Enter remarks..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" rows="3"></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex space-x-3">
+                <button (click)="updateEntry()"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
+                    <span>💾</span>
+                    <span>{{ isUploadMode ? 'Upload' : 'Update' }}</span>
+                </button>
+                <button (click)="closeModal()"
+                    class="px-6 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

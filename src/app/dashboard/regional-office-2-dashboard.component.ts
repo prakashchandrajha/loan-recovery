@@ -4,25 +4,24 @@ import { FormsModule } from '@angular/forms';
 import { LoanService, PostEntry } from './loan.service';
 
 @Component({
-  selector: 'app-legal-dashboard',
+  selector: 'app-regional-office-2-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule],
-  templateUrl: './legal-dashboard.component.html'
+  templateUrl: './regional-office-2-dashboard.component.html'
 })
-export class LegalDashboardComponent implements OnInit {
-  legalEntries: PostEntry[] = [];
+export class RegionalOffice2DashboardComponent implements OnInit {
+  regionalEntries: PostEntry[] = [];
   selectedEntry: PostEntry | null = null;
   remarks: string = '';
   file13bName: string = '';
   isUploadMode: boolean = false;
   isEditRemarksMode: boolean = false;
-  selectedRegionalOffice: string = '';
 
   constructor(private loanService: LoanService) { }
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.legalEntries = entries.filter(e => e.currentLocation === 'Legal');
+      this.regionalEntries = entries.filter(e => e.history.some(log => log.location === 'RegionalOffice2'));
     });
   }
 
@@ -42,22 +41,12 @@ export class LegalDashboardComponent implements OnInit {
     this.isUploadMode = false;
   }
 
-  forwardEntry(entry: PostEntry) {
-    this.selectedEntry = entry;
-    this.remarks = entry.remarks || '';
-    this.file13bName = entry.file13bName || '';
-    this.selectedRegionalOffice = '';
-    this.isEditRemarksMode = false;
-    this.isUploadMode = false;
-  }
-
   closeModal() {
     this.selectedEntry = null;
     this.remarks = '';
     this.file13bName = '';
     this.isUploadMode = false;
     this.isEditRemarksMode = false;
-    this.selectedRegionalOffice = '';
   }
 
   updateEntry() {
@@ -70,16 +59,6 @@ export class LegalDashboardComponent implements OnInit {
     }
   }
 
-  sendToRegional() {
-    if (this.selectedEntry && this.selectedRegionalOffice) {
-      // Assume moveToRegional method exists
-      this.loanService.moveToRegional(this.selectedEntry.id, this.selectedRegionalOffice);
-      this.closeModal();
-    } else {
-      alert('Please select a regional office');
-    }
-  }
-
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -87,13 +66,19 @@ export class LegalDashboardComponent implements OnInit {
     }
   }
 
-  // Helper methods for deadline tracking (if needed)
+  // Helper methods for deadline tracking
   isOverdue(entry: PostEntry): boolean {
-    // Legal may not have deadline, but if added later
-    return false;
+    if (!entry.regionalDeadline) return false;
+    const now = new Date();
+    const deadline = new Date(entry.regionalDeadline);
+    return now > deadline;
   }
 
   getDaysOverdue(entry: PostEntry): number {
-    return 0;
+    if (!entry.regionalDeadline) return 0;
+    const now = new Date();
+    const deadline = new Date(entry.regionalDeadline);
+    const diffTime = now.getTime() - deadline.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 }

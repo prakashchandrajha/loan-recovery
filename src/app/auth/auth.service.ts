@@ -24,6 +24,12 @@ export class AuthService {
         case 'Legal':
           this.router.navigate(['/legal-dashboard']);
           break;
+        case 'RegionalOffice1':
+          this.router.navigate(['/regional-office-1-dashboard']);
+          break;
+        case 'RegionalOffice2':
+          this.router.navigate(['/regional-office-2-dashboard']);
+          break;
         case 'AuthorizedOfficer':
           this.router.navigate(['/officer-dashboard']);
           break;

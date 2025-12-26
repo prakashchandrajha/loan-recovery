@@ -4,6 +4,8 @@ export const MOCK_USERS = [
   { id: 3, username: 'div3', password: 'div3', role: 'Division', fullName: 'Division 3' },
   { id: 4, username: 'recovery', password: 'password', role: 'Recovery', fullName: 'Recovery User' },
   { id: 5, username: 'legal', password: 'password', role: 'Legal', fullName: 'Legal User' },
-  { id: 6, username: 'officer', password: 'password', role: 'AuthorizedOfficer', fullName: 'Officer User' },
-  { id: 7, username: 'admin', password: 'password', role: 'Admin', fullName: 'Admin User' }
+  { id: 6, username: 'regional1', password: 'password', role: 'RegionalOffice1', fullName: 'Regional Office 1 User' },
+  { id: 7, username: 'regional2', password: 'password', role: 'RegionalOffice2', fullName: 'Regional Office 2 User' },
+  { id: 8, username: 'officer', password: 'password', role: 'AuthorizedOfficer', fullName: 'Officer User' },
+  { id: 9, username: 'admin', password: 'password', role: 'Admin', fullName: 'Admin User' }
 ];
