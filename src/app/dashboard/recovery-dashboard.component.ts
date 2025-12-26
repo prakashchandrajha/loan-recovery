@@ -19,7 +19,7 @@ export class RecoveryDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.recoveryEntries = entries.filter(e => e.currentLocation === 'Recovery');
+      this.recoveryEntries = entries.filter(e => e.history.some(log => log.location === 'Recovery'));
     });
   }
 
@@ -51,5 +51,21 @@ export class RecoveryDashboardComponent implements OnInit {
     } else {
       alert('Please upload 13b form before sending to Legal Cell');
     }
+  }
+
+  // Helper methods for deadline tracking
+  isOverdue(entry: PostEntry): boolean {
+    if (!entry.recoveryDeadline) return false;
+    const now = new Date();
+    const deadline = new Date(entry.recoveryDeadline);
+    return now > deadline;
+  }
+
+  getDaysOverdue(entry: PostEntry): number {
+    if (!entry.recoveryDeadline) return 0;
+    const now = new Date();
+    const deadline = new Date(entry.recoveryDeadline);
+    const diffTime = now.getTime() - deadline.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 }

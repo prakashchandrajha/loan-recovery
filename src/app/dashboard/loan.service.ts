@@ -16,6 +16,7 @@ export interface PostEntry {
     mobileNumber: string;
     npaDate: string; // NPA Date field
     deadlineDate: Date; // 3 days deadline from NPA date
+    recoveryDeadline?: Date; // 27 days deadline for Recovery processing
     // Recovery Cell fields
     remarks: string; // Remarks from Recovery cell
     file13bName: string; // 13b form file name
@@ -83,6 +84,9 @@ export class LoanService {
         if (entry) {
             entry.status = isUrgent ? 'Urgent' : 'Pending';
             entry.currentLocation = 'Recovery';
+            // Set 27 days deadline for Recovery processing from NPA date
+            entry.recoveryDeadline = new Date(entry.npaDate);
+            entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 27);
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
@@ -115,16 +119,16 @@ export class LoanService {
     checkDeadlines() {
         const currentEntries = this.entriesSubject.getValue();
         let updated = false;
-        
+
         currentEntries.forEach(entry => {
             if (entry.currentLocation === 'Division') {
                 const now = new Date();
                 const deadline = new Date(entry.deadlineDate);
-                
+
                 // Calculate days late
                 const diffTime = now.getTime() - deadline.getTime();
                 const daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
+
                 if (daysLate > 0 && entry.status !== 'Late') {
                     entry.status = 'Late';
                     // Add late log
@@ -146,9 +150,38 @@ export class LoanService {
                         updated = true;
                     }
                 }
+            } else if (entry.currentLocation === 'Recovery' && entry.recoveryDeadline) {
+                const now = new Date();
+                const deadline = new Date(entry.recoveryDeadline);
+
+                // Calculate days late
+                const diffTime = now.getTime() - deadline.getTime();
+                const daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (daysLate > 0 && entry.status !== 'Late') {
+                    entry.status = 'Late';
+                    // Add late log
+                    entry.history.push({
+                        location: 'Recovery',
+                        timestamp: new Date(),
+                        action: `File is late ${daysLate} day${daysLate > 1 ? 's' : ''}`,
+                        isLate: true,
+                        daysLate: daysLate
+                    });
+                    updated = true;
+                } else if (daysLate > 0 && entry.status === 'Late') {
+                    // Update existing late entry with new day count
+                    const lastLateLog = entry.history[entry.history.length - 1];
+                    if (lastLateLog && lastLateLog.isLate && lastLateLog.daysLate !== daysLate) {
+                        lastLateLog.action = `File is late ${daysLate} day${daysLate > 1 ? 's' : ''}`;
+                        lastLateLog.daysLate = daysLate;
+                        lastLateLog.timestamp = new Date();
+                        updated = true;
+                    }
+                }
             }
         });
-        
+
         if (updated) {
             this.entriesSubject.next([...currentEntries]);
         }

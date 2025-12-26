@@ -15,6 +15,7 @@
                     <tr class="bg-gray-50 text-gray-600 text-sm uppercase tracking-wider">
                         <th class="px-6 py-4 font-semibold border-b">File Details</th>
                         <th class="px-6 py-4 font-semibold border-b">NPA Date</th>
+                        <th class="px-6 py-4 font-semibold border-b">Status</th>
                         <th class="px-6 py-4 font-semibold border-b">Journey History</th>
                         <th class="px-6 py-4 font-semibold border-b">Actions</th>
                     </tr>
@@ -31,17 +32,40 @@
                         <td class="px-6 py-4">
                             <div class="text-sm text-gray-700">{{ entry.npaDate }}</div>
                         </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                                [class.bg-green-100]="entry.status === 'Pending'"
+                                [class.text-green-800]="entry.status === 'Pending'"
+                                [class.bg-red-100]="entry.status === 'Urgent'"
+                                [class.text-red-800]="entry.status === 'Urgent'"
+                                [class.bg-yellow-100]="entry.status === 'Late'"
+                                [class.text-yellow-800]="entry.status === 'Late'">
+                                {{ entry.status }}
+                            </span>
+                            <!-- Deadline Display -->
+                            <div class="mt-2 text-xs" [ngClass]="{'text-red-600': isOverdue(entry), 'text-gray-500': !isOverdue(entry)}">
+                                <span *ngIf="isOverdue(entry)" class="font-medium">
+                                  Overdue by {{ getDaysOverdue(entry) }} day{{ getDaysOverdue(entry) > 1 ? 's' : '' }}
+                                </span>
+                                <span *ngIf="!isOverdue(entry)">
+                                  Due: {{ entry.recoveryDeadline | date:'MMM d, y' }}
+                                </span>
+                            </div>
+                        </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
                             <!-- History Stack -->
                             <div class="space-y-2">
-                                <div *ngFor="let log of entry.history" class="flex items-start space-x-2 text-xs">
+                                <div *ngFor="let log of entry.history" class="flex items-start space-x-2 text-xs"
+                                    [class.bg-red-50]="log.isLate"
+                                    [class.pr-2]="log.isLate"
+                                    [class.rounded]="log.isLate">
                                     <div class="mt-0.5 w-1.5 h-1.5 rounded-full"
-                                        [ngClass]="{'bg-blue-400': log.location==='Division', 'bg-purple-400': log.location==='Recovery', 'bg-green-400': log.location==='Legal'}">
+                                        [ngClass]="{'bg-blue-400': log.location==='Division', 'bg-purple-400': log.location==='Recovery', 'bg-red-500': log.isLate, 'bg-green-400': log.location==='Legal'}">
                                     </div>
                                     <div>
                                         <span class="font-semibold text-gray-700">{{ log.location }}</span>
                                         <span class="text-gray-400 mx-1">•</span>
-                                        <span>{{ log.action }}</span>
+                                        <span [class.text-red-600]="log.isLate" [class.font-medium]="log.isLate">{{ log.action }}</span>
                                         <div class="text-gray-400 text-[10px]">{{ log.timestamp | date:'short' }}</div>
                                     </div>
                                 </div>
@@ -55,7 +79,7 @@
                         </td>
                     </tr>
                     <tr *ngIf="recoveryEntries.length === 0">
-                        <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
                             <div class="flex flex-col items-center justify-center space-y-3">
                                 <span class="text-4xl">📥</span>
                                 <p>No incoming files.</p>
