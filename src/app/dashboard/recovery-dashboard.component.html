@@ -71,10 +71,18 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4">
-                            <button (click)="selectEntry(entry)"
-                                class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors">
-                                📝 Process File
+                        <td class="px-6 py-4 text-right space-x-2">
+                            <button (click)="uploadEntry(entry)" title="Upload File"
+                                class="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition">
+                                📎
+                            </button>
+                            <button (click)="editRemarksEntry(entry)" title="Edit Remarks"
+                                class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
+                                ✏️
+                            </button>
+                            <button (click)="forwardEntry(entry)" title="Forward to Legal"
+                                class="p-1.5 text-green-600 hover:bg-green-50 rounded transition">
+                                📤
                             </button>
                         </td>
                     </tr>
@@ -96,7 +104,9 @@
 <div *ngIf="selectedEntry" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-            <h3 class="text-lg font-bold text-gray-800">Process File - {{ selectedEntry.fullName }}</h3>
+            <h3 class="text-lg font-bold text-gray-800">
+                {{ isUploadMode ? 'Upload File' : isEditRemarksMode ? 'Edit Remarks' : 'Forward to Legal Cell' }} - {{ selectedEntry.fullName }}
+            </h3>
             <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
                 <span class="text-2xl">×</span>
             </button>
@@ -127,7 +137,7 @@
             </div>
 
             <!-- 13b Form Upload -->
-            <div class="mb-6">
+            <div *ngIf="isUploadMode || isEditRemarksMode" class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Upload 13b Form</label>
                 <div class="relative">
                     <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
@@ -140,20 +150,40 @@
             </div>
 
             <!-- Remarks -->
-            <div class="mb-6">
+            <div *ngIf="isUploadMode || isEditRemarksMode" class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
                 <textarea [(ngModel)]="remarks" placeholder="Enter remarks for Legal Cell..."
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" rows="3"></textarea>
             </div>
 
+            <!-- Summary for Forward -->
+            <div *ngIf="!isUploadMode && !isEditRemarksMode" class="mb-6">
+                <h4 class="font-semibold text-gray-700 mb-3">File Summary</h4>
+                <div class="bg-gray-50 rounded-lg p-4 text-sm">
+                    <div class="mb-2">
+                        <span class="text-gray-500">13b Form:</span>
+                        <span class="ml-2 font-medium">{{ file13bName || 'Not uploaded' }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Remarks:</span>
+                        <span class="ml-2 font-medium">{{ remarks || 'None' }}</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Actions -->
             <div class="flex space-x-3">
-                <button (click)="sendToLegal()"
+                <button *ngIf="isUploadMode || isEditRemarksMode" (click)="updateEntry()"
+                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
+                    <span>💾</span>
+                    <span>{{ isUploadMode ? 'Upload' : 'Update' }}</span>
+                </button>
+                <button *ngIf="!isUploadMode && !isEditRemarksMode" (click)="sendToLegal()"
                     [disabled]="!file13bName"
                     [class.opacity-50]="!file13bName"
                     class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
                     <span>📤</span>
-                    <span>Send to Legal Cell</span>
+                    <span>Forward to Legal Cell</span>
                 </button>
                 <button (click)="closeModal()"
                     class="px-6 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-colors">

@@ -14,6 +14,9 @@ export class RecoveryDashboardComponent implements OnInit {
   selectedEntry: PostEntry | null = null;
   remarks: string = '';
   file13bName: string = '';
+  isEditMode: boolean = false;
+  isUploadMode: boolean = false;
+  isEditRemarksMode: boolean = false;
 
   constructor(private loanService: LoanService) { }
 
@@ -23,22 +26,56 @@ export class RecoveryDashboardComponent implements OnInit {
     });
   }
 
-  selectEntry(entry: PostEntry) {
+  uploadEntry(entry: PostEntry) {
+    this.selectedEntry = entry;
+    this.file13bName = entry.file13bName || '';
+    this.remarks = entry.remarks || '';
+    this.isUploadMode = true;
+    this.isEditRemarksMode = false;
+    this.isEditMode = false;
+  }
+
+  editRemarksEntry(entry: PostEntry) {
+    this.selectedEntry = entry;
+    this.file13bName = entry.file13bName || '';
+    this.remarks = entry.remarks || '';
+    this.isEditRemarksMode = true;
+    this.isUploadMode = false;
+    this.isEditMode = false;
+  }
+
+  forwardEntry(entry: PostEntry) {
     this.selectedEntry = entry;
     this.remarks = entry.remarks || '';
     this.file13bName = entry.file13bName || '';
+    this.isEditMode = false;
+    this.isUploadMode = false;
+    this.isEditRemarksMode = false;
   }
 
   closeModal() {
     this.selectedEntry = null;
     this.remarks = '';
     this.file13bName = '';
+    this.isEditMode = false;
+    this.isUploadMode = false;
+    this.isEditRemarksMode = false;
   }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
       this.file13bName = file.name;
+    }
+  }
+
+  updateEntry() {
+    if (this.selectedEntry) {
+      this.selectedEntry.remarks = this.remarks;
+      this.selectedEntry.file13bName = this.file13bName;
+      this.selectedEntry.file13bUploadDate = new Date();
+      this.loanService.updateEntry(this.selectedEntry);
+      this.closeModal();
     }
   }
 
