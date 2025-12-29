@@ -14,6 +14,7 @@ export class LegalDashboardComponent implements OnInit {
   selectedEntry: PostEntry | null = null;
   remarks: string = '';
   file13bName: string = '';
+  vettedFileName: string = '';
   isUploadMode: boolean = false;
   isEditRemarksMode: boolean = false;
 
@@ -45,6 +46,7 @@ export class LegalDashboardComponent implements OnInit {
     this.selectedEntry = entry;
     this.remarks = entry.remarks || '';
     this.file13bName = entry.file13bName || '';
+    this.vettedFileName = entry.vettedFileName || '';
     this.isEditRemarksMode = false;
     this.isUploadMode = false;
   }
@@ -53,6 +55,7 @@ export class LegalDashboardComponent implements OnInit {
     this.selectedEntry = null;
     this.remarks = '';
     this.file13bName = '';
+    this.vettedFileName = '';
     this.isUploadMode = false;
     this.isEditRemarksMode = false;
   }
@@ -69,8 +72,8 @@ export class LegalDashboardComponent implements OnInit {
 
   sendBackToRecovery() {
     if (this.selectedEntry) {
-      if (confirm('Send this file back to Recovery Cell?')) {
-        this.loanService.moveBackToRecovery(this.selectedEntry.id, this.remarks);
+      if (confirm('Send this file back to Recovery Division?')) {
+        this.loanService.moveBackToRecovery(this.selectedEntry.id, this.remarks, this.vettedFileName);
         this.closeModal();
       }
     }
@@ -79,21 +82,39 @@ export class LegalDashboardComponent implements OnInit {
   onFileSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.file13bName = file.name;
+      this.vettedFileName = file.name;
     }
   }
 
-  // Helper methods for deadline tracking (if needed)
+  // Helper methods for deadline tracking
   isOverdue(entry: PostEntry): boolean {
-    // Legal may not have deadline, but if added later
-    return false;
+    if (!entry.legalDeadline) return false;
+    const now = new Date();
+    const deadline = new Date(entry.legalDeadline);
+    return now > deadline;
   }
 
   getFormType(entry: PostEntry): string {
-    return entry.history.some(log => log.location === 'RegionalOffice1' || log.location === 'RegionalOffice2') ? '13(4)' : '13b';
+    return entry.sectionType;
   }
 
   getDaysOverdue(entry: PostEntry): number {
-    return 0;
+    if (!entry.legalDeadline) return 0;
+    const now = new Date();
+    const deadline = new Date(entry.legalDeadline);
+    const diffTime = now.getTime() - deadline.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  getLegalDeadlineDays(entry: PostEntry): number {
+    return entry.sectionType === '13(2)' ? 7 : 15;
+  }
+
+  getDaysRemaining(entry: PostEntry): number {
+    if (!entry.legalDeadline) return 0;
+    const now = new Date();
+    const deadline = new Date(entry.legalDeadline);
+    const diffTime = deadline.getTime() - now.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 }

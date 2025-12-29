@@ -16,7 +16,8 @@ export class DivisionDashboardComponent implements OnInit {
   formData = {
     fullName: '',
     mobileNumber: '',
-    npaDate: ''
+    npaDate: '',
+    sectionType: '13(2)' as '13(2)' | '13(4)'
   };
 
   entries: PostEntry[] = [];
@@ -58,6 +59,7 @@ export class DivisionDashboardComponent implements OnInit {
           entry.fullName = this.formData.fullName;
           entry.mobileNumber = this.formData.mobileNumber;
           entry.npaDate = this.formData.npaDate;
+          entry.sectionType = this.formData.sectionType;
           // Ideally call service.updateEntry(entry) to notify others, though object ref works locally
           this.loanService.updateEntry(entry);
         }
@@ -68,6 +70,7 @@ export class DivisionDashboardComponent implements OnInit {
           fullName: this.formData.fullName,
           mobileNumber: this.formData.mobileNumber,
           npaDate: this.formData.npaDate,
+          sectionType: this.formData.sectionType,
           status: 'Pending',
           currentLocation: 'Division'
         });
@@ -82,7 +85,8 @@ export class DivisionDashboardComponent implements OnInit {
     this.formData = {
       fullName: entry.fullName,
       mobileNumber: entry.mobileNumber,
-      npaDate: entry.npaDate || ''
+      npaDate: entry.npaDate || '',
+      sectionType: entry.sectionType
     };
     this.currentView = 'form';
   }
@@ -101,7 +105,7 @@ export class DivisionDashboardComponent implements OnInit {
   }
 
   resetForm() {
-    this.formData = { fullName: '', mobileNumber: '', npaDate: '' };
+    this.formData = { fullName: '', mobileNumber: '', npaDate: '', sectionType: '13(2)' };
     this.editingEntryId = null;
   }
 

@@ -25,6 +25,15 @@
                         <td class="px-6 py-4">
                             <div class="font-medium text-gray-800">{{ entry.fullName }}</div>
                             <div class="text-sm text-gray-500">{{ entry.mobileNumber }}</div>
+                            <div class="mt-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                                    [class.bg-purple-100]="entry.sectionType === '13(2)'"
+                                    [class.text-purple-800]="entry.sectionType === '13(2)'"
+                                    [class.bg-indigo-100]="entry.sectionType === '13(4)'"
+                                    [class.text-indigo-800]="entry.sectionType === '13(4)'">
+                                    {{ entry.sectionType }}
+                                </span>
+                            </div>
                             <div *ngIf="entry.file13bName" class="mt-1 text-xs text-green-600">
                                 ✓ {{ getFormType(entry) }}: {{ entry.file13bName }}
                             </div>
@@ -42,6 +51,22 @@
                                 [class.text-yellow-800]="entry.status === 'Late'">
                                 {{ entry.status }}
                             </span>
+                            <!-- Deadline Display -->
+                            <div class="mt-2 text-xs"
+                                [ngClass]="{'text-red-600': isOverdue(entry), 'text-green-600': !isOverdue(entry) && getDaysRemaining(entry) > 0}">
+                                <div class="font-medium">{{ getLegalDeadlineDays(entry) }} days ({{ entry.sectionType
+                                    }})</div>
+                                <span *ngIf="isOverdue(entry)" class="font-medium">
+                                    ⚠️ Overdue by {{ getDaysOverdue(entry) }} day{{ getDaysOverdue(entry) > 1 ? 's' : ''
+                                    }}
+                                </span>
+                                <span *ngIf="!isOverdue(entry) && getDaysRemaining(entry) > 0">
+                                    {{ getDaysRemaining(entry) }} days left
+                                </span>
+                                <span *ngIf="!isOverdue(entry) && getDaysRemaining(entry) <= 0" class="text-gray-500">
+                                    Due: {{ entry.legalDeadline | date:'MMM d, y' }}
+                                </span>
+                            </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
                             <!-- History Stack -->
@@ -58,25 +83,30 @@
                                     </div>
                                 </div>
                             </div>
-                           
+
                             <!-- Modal for Processing File -->
-                            <div *ngIf="selectedEntry" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                                <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+                            <div *ngIf="selectedEntry"
+                                class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                                <div
+                                    class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
                                     <div class="p-6 border-b border-gray-200 flex justify-between items-center">
                                         <h3 class="text-lg font-bold text-gray-800">
-                                            {{ isUploadMode ? 'Upload File' : isEditRemarksMode ? 'Edit File & Remarks' : 'Send Back to Recovery' }} - {{ selectedEntry.fullName }}
+                                            {{ isUploadMode ? 'Upload File' : isEditRemarksMode ? 'Edit File & Remarks'
+                                            : 'Send Back to Recovery' }} - {{ selectedEntry.fullName }}
                                         </h3>
                                         <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
                                             <span class="text-2xl">×</span>
                                         </button>
                                     </div>
-                           
+
                                     <div class="p-6">
                                         <!-- Form Upload -->
                                         <div *ngIf="isUploadMode || isEditRemarksMode" class="mb-6">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload/Reupload {{ getFormType(selectedEntry) }} Form</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload/Reupload
+                                                {{ getFormType(selectedEntry) }} Form</label>
                                             <div class="relative">
-                                                <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
+                                                <input type="file" (change)="onFileSelected($event)"
+                                                    accept=".pdf,.doc,.docx"
                                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
                                                 <span class="absolute right-3 top-3.5 text-gray-400">📎</span>
                                             </div>
@@ -84,26 +114,30 @@
                                                 ✓ Selected: {{ file13bName }}
                                             </div>
                                         </div>
-                           
+
                                         <!-- Remarks -->
                                         <div class="mb-6">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
-                                            <textarea [(ngModel)]="remarks" [placeholder]="isUploadMode || isEditRemarksMode ? 'Enter remarks for Regional Office...' : 'Add vetting remarks for Recovery Cell...'"
-                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" rows="3"></textarea>
+                                            <textarea [(ngModel)]="remarks"
+                                                [placeholder]="isUploadMode || isEditRemarksMode ? 'Enter remarks for Regional Office...' : 'Add vetting remarks for Recovery Cell...'"
+                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
+                                                rows="3"></textarea>
                                         </div>
-                           
-                           
+
+
                                         <!-- Summary for Send Back -->
                                         <div *ngIf="!isUploadMode && !isEditRemarksMode" class="mb-6">
                                             <h4 class="font-semibold text-gray-700 mb-3">File Summary</h4>
                                             <div class="bg-gray-50 rounded-lg p-4 text-sm">
                                                 <div>
-                                                    <span class="text-gray-500">{{ getFormType(selectedEntry) }} Form:</span>
-                                                    <span class="ml-2 font-medium">{{ file13bName || 'Not uploaded' }}</span>
+                                                    <span class="text-gray-500">{{ getFormType(selectedEntry) }}
+                                                        Form:</span>
+                                                    <span class="ml-2 font-medium">{{ file13bName || 'Not uploaded'
+                                                        }}</span>
                                                 </div>
                                             </div>
                                         </div>
-                           
+
                                         <!-- Actions -->
                                         <div class="flex space-x-3">
                                             <button *ngIf="isUploadMode || isEditRemarksMode" (click)="updateEntry()"
@@ -111,7 +145,8 @@
                                                 <span>💾</span>
                                                 <span>{{ isUploadMode ? 'Upload' : 'Update' }}</span>
                                             </button>
-                                            <button *ngIf="!isUploadMode && !isEditRemarksMode" (click)="sendBackToRecovery()"
+                                            <button *ngIf="!isUploadMode && !isEditRemarksMode"
+                                                (click)="sendBackToRecovery()"
                                                 class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
                                                 <span>↩️</span>
                                                 <span>Send Back to Recovery</span>

@@ -36,9 +36,29 @@ export class RecoveryDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.divisionEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'Division') && !e.history.some(log => log.location === 'Legal') && !e.history.some(log => log.location === 'RegionalOffice1' || log.location === 'RegionalOffice2'));
-      this.legalEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'Legal') && !e.history.some(log => log.location === 'RegionalOffice1' || log.location === 'RegionalOffice2'));
-      this.roEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'RegionalOffice1' || log.location === 'RegionalOffice2'));
+      // Filter entries based on where they came from (last location before Recovery)
+      this.divisionEntries = entries.filter(e => {
+        if (e.currentLocation !== 'Recovery') return false;
+        // Get the last non-Recovery location from history
+        const lastNonRecoveryLog = [...e.history].reverse().find(log => log.location !== 'Recovery');
+        return lastNonRecoveryLog?.location === 'Division';
+      });
+
+      this.legalEntries = entries.filter(e => {
+        if (e.currentLocation !== 'Recovery') return false;
+        // Get the last non-Recovery location from history
+        const lastNonRecoveryLog = [...e.history].reverse().find(log => log.location !== 'Recovery');
+        return lastNonRecoveryLog?.location === 'Legal';
+      });
+
+      this.roEntries = entries.filter(e => {
+        if (e.currentLocation !== 'Recovery') return false;
+        // Get the last non-Recovery location from history
+        const lastNonRecoveryLog = [...e.history].reverse().find(log => log.location !== 'Recovery');
+        return lastNonRecoveryLog?.location === 'RODivision' ||
+          lastNonRecoveryLog?.location === 'RegionalOffice1' ||
+          lastNonRecoveryLog?.location === 'RegionalOffice2';
+      });
     });
   }
 
@@ -100,12 +120,24 @@ export class RecoveryDashboardComponent implements OnInit {
 
   sendToLegal() {
     if (this.selectedEntry && this.file13bName) {
-      if (confirm('Send this file to Legal Cell with 13b form?')) {
+      if (confirm('Send this file to Legal Cell with form?')) {
+        // Check if this is a 13(4) stage (file has been to RO before)
+        const hasBeenToRO = this.selectedEntry.history.some(log =>
+          log.location === 'RODivision' ||
+          log.location === 'RegionalOffice1' ||
+          log.location === 'RegionalOffice2'
+        );
+
+        // If file has been to RO, this is 13(4) stage, update sectionType
+        if (hasBeenToRO && this.selectedEntry.sectionType === '13(2)') {
+          this.selectedEntry.sectionType = '13(4)';
+        }
+
         this.loanService.moveToLegal(this.selectedEntry.id, this.remarks, this.file13bName);
         this.closeModal();
       }
     } else {
-      alert('Please upload 13b form before sending to Legal Cell');
+      alert('Please upload form before sending to Legal Cell');
     }
   }
 
@@ -113,6 +145,15 @@ export class RecoveryDashboardComponent implements OnInit {
     if (this.selectedEntry) {
       if (confirm('Send this file to Regional Office?')) {
         this.loanService.moveToRegional(this.selectedEntry.id, this.selectedRegionalOffice, this.remarks);
+        this.closeModal();
+      }
+    }
+  }
+
+  sendToRODivision() {
+    if (this.selectedEntry) {
+      if (confirm('Send this file to RO Division for notice issuance?')) {
+        this.loanService.moveToRODivision(this.selectedEntry.id, this.remarks);
         this.closeModal();
       }
     }
@@ -131,6 +172,18 @@ export class RecoveryDashboardComponent implements OnInit {
     const now = new Date();
     const deadline = new Date(entry.recoveryDeadline);
     const diffTime = now.getTime() - deadline.getTime();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
+
+  getDeadlineDays(entry: PostEntry): number {
+    return entry.sectionType === '13(2)' ? 27 : 75;
+  }
+
+  getDaysRemaining(entry: PostEntry): number {
+    if (!entry.recoveryDeadline) return 0;
+    const now = new Date();
+    const deadline = new Date(entry.recoveryDeadline);
+    const diffTime = deadline.getTime() - now.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
 }

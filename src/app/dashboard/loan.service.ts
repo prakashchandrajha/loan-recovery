@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
 export interface LocationLog {
-    location: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2';
+    location: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2' | 'RODivision';
     timestamp: Date;
     action: string; // e.g., "Created", "Sent Urgent", "Auto-Forwarded"
     isLate?: boolean; // Flag to indicate if this log shows late status
@@ -15,14 +15,18 @@ export interface PostEntry {
     fullName: string;
     mobileNumber: string;
     npaDate: string; // NPA Date field
+    sectionType: '13(2)' | '13(4)'; // Section type for the notice
     deadlineDate: Date; // 3 days deadline from NPA date
-    recoveryDeadline?: Date; // 27 days deadline for Recovery processing
+    recoveryDeadline?: Date; // 27 or 75 days deadline for Recovery processing based on section type
+    legalDeadline?: Date; // 7 or 15 days deadline for Legal vetting based on section type
+    roDeadline?: Date; // RO Division deadline
     // Recovery Cell fields
     remarks: string; // Remarks from Recovery cell
     file13bName: string; // 13b form file name
     file13bUploadDate: Date; // Upload date for 13b form
-    status: 'Pending' | 'Urgent' | 'Late' | 'With Recovery' | 'With Legal';
-    currentLocation: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2';
+    vettedFileName?: string; // Vetted file name from Legal Cell
+    status: 'Pending' | 'Urgent' | 'Late' | 'With Recovery' | 'With Legal' | 'With RO';
+    currentLocation: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2' | 'RODivision';
     regionalOffice?: string;
     regionalDeadline?: Date;
     history: LocationLog[];
@@ -35,12 +39,12 @@ export class LoanService {
     private entriesSubject = new BehaviorSubject<PostEntry[]>([]);
     entries$ = this.entriesSubject.asObservable();
 
-    addEntry(entry: Omit<PostEntry, 'id' | 'history' | 'deadlineDate' | 'remarks' | 'file13bName' | 'file13bUploadDate'>) {
+    addEntry(entry: Omit<PostEntry, 'id' | 'history' | 'deadlineDate' | 'remarks' | 'file13bName' | 'file13bUploadDate' | 'vettedFileName'>) {
         // Calculate deadline from NPA date (3 days)
         const npaDate = new Date(entry.npaDate);
         const deadlineDate = new Date(npaDate);
         deadlineDate.setDate(deadlineDate.getDate() + 3); // 3 days deadline from NPA date
-        
+
         const newEntry: PostEntry = {
             ...entry,
             id: this.generateId(),
@@ -86,9 +90,11 @@ export class LoanService {
         if (entry) {
             entry.status = isUrgent ? 'Urgent' : 'Pending';
             entry.currentLocation = 'Recovery';
-            // Set 27 days deadline for Recovery processing from NPA date
+            // Set deadline for Recovery processing from NPA date based on section type
+            // 27 days for Section 13(2), 75 days for Section 13(4)
             entry.recoveryDeadline = new Date(entry.npaDate);
-            entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 27);
+            const daysToAdd = entry.sectionType === '13(2)' ? 27 : 75;
+            entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + daysToAdd);
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
@@ -108,10 +114,15 @@ export class LoanService {
             entry.file13bUploadDate = new Date();
             entry.status = 'With Legal';
             entry.currentLocation = 'Legal';
+            // Set Legal deadline based on section type
+            // 7 days for Section 13(2), 15 days for Section 13(4)
+            entry.legalDeadline = new Date();
+            const daysToAdd = entry.sectionType === '13(2)' ? 7 : 15;
+            entry.legalDeadline.setDate(entry.legalDeadline.getDate() + daysToAdd);
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: `13b Form Uploaded: ${file13bName}. Sent to Legal Cell. Remarks: ${remarks}`
+                action: `${entry.sectionType} Form Uploaded: ${file13bName}. Sent to Legal Cell. Remarks: ${remarks}`
             });
             entry.history.push({
                 location: 'Legal',
@@ -123,24 +134,27 @@ export class LoanService {
     }
 
     // Send entry back from Legal to Recovery
-    moveBackToRecovery(id: string, remarks: string) {
+    moveBackToRecovery(id: string, remarks: string, vettedFileName?: string) {
         const currentEntries = this.entriesSubject.getValue();
         const entry = currentEntries.find(e => e.id === id);
         if (entry) {
             entry.remarks = remarks;
+            if (vettedFileName) {
+                entry.vettedFileName = vettedFileName;
+            }
             entry.currentLocation = 'Recovery';
-            // Set 1 day deadline for Recovery to forward to RO
+            // Set 1 day deadline for Recovery Division to review and forward to RO
             entry.recoveryDeadline = new Date();
             entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 1);
             entry.history.push({
                 location: 'Legal',
                 timestamp: new Date(),
-                action: `Sent back to Recovery. Remarks: ${remarks}`
+                action: `Vetted and sent back to Recovery. ${vettedFileName ? 'Vetted File: ' + vettedFileName + '. ' : ''}Remarks: ${remarks}`
             });
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: 'Received back from Legal'
+                action: 'Received back from Legal Cell'
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -165,6 +179,50 @@ export class LoanService {
                 location: 'Recovery',
                 timestamp: new Date(),
                 action: 'Received back from Regional Office'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
+    // Send entry from Recovery to RO Division (after Legal vetting)
+    moveToRODivision(id: string, remarks?: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.remarks = remarks || '';
+            entry.currentLocation = 'RODivision';
+            entry.status = 'With RO';
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: `Sent to RO Division for notice issuance. Remarks: ${remarks || 'None'}`
+            });
+            entry.history.push({
+                location: 'RODivision',
+                timestamp: new Date(),
+                action: 'Received from Recovery Division'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
+    // Send entry back from RO Division to Recovery
+    moveBackToRecoveryFromRODivision(id: string, remarks: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.remarks = remarks;
+            entry.currentLocation = 'Recovery';
+            entry.status = 'Pending';
+            entry.history.push({
+                location: 'RODivision',
+                timestamp: new Date(),
+                action: `Notice issued to borrower. Sent back to Recovery. Remarks: ${remarks}`
+            });
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: 'Received back from RO Division'
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -238,6 +296,35 @@ export class LoanService {
                     // Add late log
                     entry.history.push({
                         location: 'Recovery',
+                        timestamp: new Date(),
+                        action: `File is late ${daysLate} day${daysLate > 1 ? 's' : ''}`,
+                        isLate: true,
+                        daysLate: daysLate
+                    });
+                    updated = true;
+                } else if (daysLate > 0 && entry.status === 'Late') {
+                    // Update existing late entry with new day count
+                    const lastLateLog = entry.history[entry.history.length - 1];
+                    if (lastLateLog && lastLateLog.isLate && lastLateLog.daysLate !== daysLate) {
+                        lastLateLog.action = `File is late ${daysLate} day${daysLate > 1 ? 's' : ''}`;
+                        lastLateLog.daysLate = daysLate;
+                        lastLateLog.timestamp = new Date();
+                        updated = true;
+                    }
+                }
+            } else if (entry.currentLocation === 'Legal' && entry.legalDeadline) {
+                const now = new Date();
+                const deadline = new Date(entry.legalDeadline);
+
+                // Calculate days late
+                const diffTime = now.getTime() - deadline.getTime();
+                const daysLate = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (daysLate > 0 && entry.status !== 'Late') {
+                    entry.status = 'Late';
+                    // Add late log
+                    entry.history.push({
+                        location: 'Legal',
                         timestamp: new Date(),
                         action: `File is late ${daysLate} day${daysLate > 1 ? 's' : ''}`,
                         isLate: true,

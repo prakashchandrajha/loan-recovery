@@ -72,6 +72,25 @@
             </div>
           </div>
 
+          <!-- Section Type -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Section Type</label>
+            <div class="flex space-x-4">
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="radio" [(ngModel)]="formData.sectionType" name="sectionType" value="13(2)" required
+                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                <span class="text-sm font-medium text-gray-700">Section 13(2)</span>
+                <span class="text-xs text-gray-500">(27 days Recovery)</span>
+              </label>
+              <label class="flex items-center space-x-2 cursor-pointer">
+                <input type="radio" [(ngModel)]="formData.sectionType" name="sectionType" value="13(4)" required
+                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                <span class="text-sm font-medium text-gray-700">Section 13(4)</span>
+                <span class="text-xs text-gray-500">(75 days Recovery)</span>
+              </label>
+            </div>
+          </div>
+
           <!-- Actions -->
           <button type="submit"
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors shadow-sm flex justify-center items-center space-x-2">
@@ -112,19 +131,27 @@
                 <td class="px-6 py-4">
                   <div class="font-medium text-gray-800">{{ entry.fullName }}</div>
                   <div class="text-sm text-gray-500">{{ entry.mobileNumber }}</div>
+                  <div class="mt-1">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                      [class.bg-purple-100]="entry.sectionType === '13(2)'"
+                      [class.text-purple-800]="entry.sectionType === '13(2)'"
+                      [class.bg-indigo-100]="entry.sectionType === '13(4)'"
+                      [class.text-indigo-800]="entry.sectionType === '13(4)'">
+                      {{ entry.sectionType }}
+                    </span>
+                  </div>
                 </td>
                 <td class="px-6 py-4">
                   <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                     [class.bg-green-100]="entry.status === 'Pending'"
-                    [class.text-green-800]="entry.status === 'Pending'" 
-                    [class.bg-red-100]="entry.status === 'Urgent'"
-                    [class.text-red-800]="entry.status === 'Urgent'"
-                    [class.bg-yellow-100]="entry.status === 'Late'"
+                    [class.text-green-800]="entry.status === 'Pending'" [class.bg-red-100]="entry.status === 'Urgent'"
+                    [class.text-red-800]="entry.status === 'Urgent'" [class.bg-yellow-100]="entry.status === 'Late'"
                     [class.text-yellow-800]="entry.status === 'Late'">
                     {{ entry.status }}
                   </span>
                   <!-- Deadline Display -->
-                  <div class="mt-2 text-xs" [ngClass]="{'text-red-600': isOverdue(entry), 'text-gray-500': !isOverdue(entry)}">
+                  <div class="mt-2 text-xs"
+                    [ngClass]="{'text-red-600': isOverdue(entry), 'text-gray-500': !isOverdue(entry)}">
                     NPA Date: {{ entry.npaDate | date:'MMM d, y' }}
                     <span *ngIf="isOverdue(entry)" class="ml-1 font-medium">
                       (Overdue by {{ getDaysOverdue(entry) }} day{{ getDaysOverdue(entry) > 1 ? 's' : '' }})
@@ -142,9 +169,7 @@
                   <!-- History Stack -->
                   <div class="space-y-2">
                     <div *ngFor="let log of entry.history" class="flex items-start space-x-2 text-xs"
-                      [class.bg-red-50]="log.isLate"
-                      [class.pr-2]="log.isLate"
-                      [class.rounded]="log.isLate">
+                      [class.bg-red-50]="log.isLate" [class.pr-2]="log.isLate" [class.rounded]="log.isLate">
                       <div class="mt-0.5 w-1.5 h-1.5 rounded-full"
                         [ngClass]="{'bg-blue-400': log.location==='Division', 'bg-purple-400': log.location==='Recovery', 'bg-red-500': log.isLate}">
                       </div>
