@@ -89,6 +89,10 @@ export class LegalDashboardComponent implements OnInit {
     return false;
   }
 
+  getFormType(entry: PostEntry): string {
+    return entry.history.some(log => log.location === 'RegionalOffice1' || log.location === 'RegionalOffice2') ? '13(4)' : '13b';
+  }
+
   getDaysOverdue(entry: PostEntry): number {
     return 0;
   }
