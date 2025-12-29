@@ -12,26 +12,33 @@ import { LoanService, PostEntry } from './loan.service';
 export class RecoveryDashboardComponent implements OnInit {
   divisionEntries: PostEntry[] = [];
   legalEntries: PostEntry[] = [];
+  roEntries: PostEntry[] = [];
   selectedEntry: PostEntry | null = null;
   remarks: string = '';
   file13bName: string = '';
   isEditMode: boolean = false;
   isUploadMode: boolean = false;
   isEditRemarksMode: boolean = false;
-  activeTab: 'division' | 'legal' = 'division';
+  activeTab: 'division' | 'legal' | 'ro' = 'division';
   isSendToRO: boolean = false;
   selectedRegionalOffice: string = 'RegionalOffice1';
 
   constructor(private loanService: LoanService) { }
 
   get activeEntries(): PostEntry[] {
-    return this.activeTab === 'division' ? this.divisionEntries : this.legalEntries;
+    switch (this.activeTab) {
+      case 'division': return this.divisionEntries;
+      case 'legal': return this.legalEntries;
+      case 'ro': return this.roEntries;
+      default: return this.divisionEntries;
+    }
   }
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.divisionEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'Division') && !e.history.some(log => log.location === 'Legal'));
-      this.legalEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'Legal'));
+      this.divisionEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'Division') && !e.history.some(log => log.location === 'Legal') && !e.history.some(log => log.location === 'RegionalOffice1' || log.location === 'RegionalOffice2'));
+      this.legalEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'Legal') && !e.history.some(log => log.location === 'RegionalOffice1' || log.location === 'RegionalOffice2'));
+      this.roEntries = entries.filter(e => e.currentLocation === 'Recovery' && e.history.some(log => log.location === 'RegionalOffice1' || log.location === 'RegionalOffice2'));
     });
   }
 

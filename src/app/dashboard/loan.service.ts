@@ -146,6 +146,30 @@ export class LoanService {
         }
     }
 
+    // Send entry back from Regional Office to Recovery
+    moveBackToRecoveryFromRO(id: string, remarks: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.remarks = remarks;
+            entry.currentLocation = 'Recovery';
+            // Set 1 day deadline for Recovery to process
+            entry.recoveryDeadline = new Date();
+            entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 1);
+            entry.history.push({
+                location: entry.currentLocation,
+                timestamp: new Date(),
+                action: `Notice sent to borrower. Sent back to Recovery. Remarks: ${remarks}`
+            });
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: 'Received back from Regional Office'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
     // Send entry from Legal to Regional Office
     moveToRegional(id: string, regionalOffice: string, remarks?: string) {
         const currentEntries = this.entriesSubject.getValue();

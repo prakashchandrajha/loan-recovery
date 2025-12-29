@@ -75,13 +75,9 @@
 
                             <!-- Only show actions if file is still in Regional Office 1 -->
                             <ng-container *ngIf="entry.currentLocation === 'RegionalOffice1'; else readOnlyActions">
-                                <button (click)="uploadEntry(entry)" title="Upload File"
-                                    class="p-1.5 text-purple-600 hover:bg-purple-50 rounded transition">
-                                    📎
-                                </button>
-                                <button (click)="editRemarksEntry(entry)" title="Edit Remarks"
-                                    class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
-                                    ✏️
+                                <button (click)="noticeToBorrower(entry)" title="Notice to Borrower"
+                                    class="px-3 py-1.5 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 rounded transition">
+                                    📢 Notice to Borrower
                                 </button>
                             </ng-container>
 
@@ -108,12 +104,12 @@
     </div>
 </div>
 
-<!-- Modal for Processing File -->
+<!-- Modal for Notice to Borrower -->
 <div *ngIf="selectedEntry" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div class="p-6 border-b border-gray-200 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-800">
-                {{ isUploadMode ? 'Upload File' : 'Edit Remarks' }} - {{ selectedEntry.fullName }}
+                Notice to Borrower - {{ selectedEntry.fullName }}
             </h3>
             <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
                 <span class="text-2xl">×</span>
@@ -121,32 +117,55 @@
         </div>
 
         <div class="p-6">
-            <!-- 13b Form Upload -->
-            <div *ngIf="isUploadMode" class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Upload 13b Form</label>
-                <div class="relative">
-                    <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
-                    <span class="absolute right-3 top-3.5 text-gray-400">📎</span>
+            <!-- File Details -->
+            <div class="bg-gray-50 rounded-lg p-4 mb-6">
+                <h4 class="font-semibold text-gray-700 mb-3">File Details</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-gray-500">Full Name:</span>
+                        <span class="ml-2 font-medium">{{ selectedEntry.fullName }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Mobile Number:</span>
+                        <span class="ml-2 font-medium">{{ selectedEntry.mobileNumber }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">NPA Date:</span>
+                        <span class="ml-2 font-medium">{{ selectedEntry.npaDate }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Remarks:</span>
+                        <span class="ml-2 font-medium">{{ selectedEntry.remarks || 'None' }}</span>
+                    </div>
                 </div>
-                <div *ngIf="file13bName" class="mt-2 text-sm text-green-600">
-                    ✓ Selected: {{ file13bName }}
+            </div>
+
+            <!-- Confirmation Message -->
+            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+                <div class="flex items-start space-x-3">
+                    <div class="text-orange-600 text-xl">⚠️</div>
+                    <div>
+                        <h4 class="font-semibold text-orange-800 mb-2">Reclarification Required</h4>
+                        <p class="text-orange-700 text-sm">
+                            Are you sure you want to send a notice to the borrower? This will forward the file back to Recovery Division for further processing.
+                        </p>
+                    </div>
                 </div>
             </div>
 
             <!-- Remarks -->
-            <div *ngIf="isUploadMode || isEditRemarksMode" class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
-                <textarea [(ngModel)]="remarks" placeholder="Enter remarks..."
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Additional Remarks (Optional)</label>
+                <textarea [(ngModel)]="remarks" placeholder="Enter any additional remarks..."
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" rows="3"></textarea>
             </div>
 
             <!-- Actions -->
             <div class="flex space-x-3">
-                <button (click)="updateEntry()"
-                    class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
-                    <span>💾</span>
-                    <span>{{ isUploadMode ? 'Upload' : 'Update' }}</span>
+                <button (click)="sendNotice()"
+                    class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
+                    <span>📤</span>
+                    <span>Send Notice & Forward to Recovery</span>
                 </button>
                 <button (click)="closeModal()"
                     class="px-6 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-colors">

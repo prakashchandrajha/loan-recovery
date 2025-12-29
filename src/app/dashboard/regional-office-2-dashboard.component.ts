@@ -13,56 +13,34 @@ export class RegionalOffice2DashboardComponent implements OnInit {
   regionalEntries: PostEntry[] = [];
   selectedEntry: PostEntry | null = null;
   remarks: string = '';
-  file13bName: string = '';
-  isUploadMode: boolean = false;
-  isEditRemarksMode: boolean = false;
+  isNoticeMode: boolean = false;
 
   constructor(private loanService: LoanService) { }
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.regionalEntries = entries.filter(e => e.history.some(log => log.location === 'RegionalOffice2'));
+      this.regionalEntries = entries.filter(e => e.currentLocation === 'RegionalOffice2');
     });
   }
 
-  uploadEntry(entry: PostEntry) {
+  noticeToBorrower(entry: PostEntry) {
     this.selectedEntry = entry;
-    this.file13bName = entry.file13bName || '';
     this.remarks = entry.remarks || '';
-    this.isUploadMode = true;
-    this.isEditRemarksMode = false;
-  }
-
-  editRemarksEntry(entry: PostEntry) {
-    this.selectedEntry = entry;
-    this.file13bName = entry.file13bName || '';
-    this.remarks = entry.remarks || '';
-    this.isEditRemarksMode = true;
-    this.isUploadMode = false;
+    this.isNoticeMode = true;
   }
 
   closeModal() {
     this.selectedEntry = null;
     this.remarks = '';
-    this.file13bName = '';
-    this.isUploadMode = false;
-    this.isEditRemarksMode = false;
+    this.isNoticeMode = false;
   }
 
-  updateEntry() {
+  sendNotice() {
     if (this.selectedEntry) {
-      this.selectedEntry.remarks = this.remarks;
-      this.selectedEntry.file13bName = this.file13bName;
-      this.selectedEntry.file13bUploadDate = new Date();
-      this.loanService.updateEntry(this.selectedEntry);
-      this.closeModal();
-    }
-  }
-
-  onFileSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.file13bName = file.name;
+      if (confirm('Reclarification: Are you sure to send notice to borrower?')) {
+        this.loanService.moveBackToRecoveryFromRO(this.selectedEntry.id, this.remarks);
+        this.closeModal();
+      }
     }
   }
 
