@@ -147,10 +147,11 @@ export class LoanService {
     }
 
     // Send entry from Legal to Regional Office
-    moveToRegional(id: string, regionalOffice: string) {
+    moveToRegional(id: string, regionalOffice: string, remarks?: string) {
         const currentEntries = this.entriesSubject.getValue();
         const entry = currentEntries.find(e => e.id === id);
         if (entry) {
+            entry.remarks = remarks || '';
             entry.regionalOffice = regionalOffice;
             entry.currentLocation = regionalOffice as 'RegionalOffice1' | 'RegionalOffice2';
             // Set 8 days deadline for Regional processing
@@ -159,7 +160,7 @@ export class LoanService {
             entry.history.push({
                 location: entry.currentLocation,
                 timestamp: new Date(),
-                action: `Sent to ${regionalOffice.replace('RegionalOffice', 'Regional Office ')}`
+                action: `Sent to ${regionalOffice.replace('RegionalOffice', 'Regional Office ')}. Remarks: ${remarks || 'None'}`
             });
             this.entriesSubject.next([...currentEntries]);
         }

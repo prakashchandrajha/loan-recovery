@@ -105,7 +105,7 @@ export class RecoveryDashboardComponent implements OnInit {
   sendToRegional() {
     if (this.selectedEntry) {
       if (confirm('Send this file to Regional Office?')) {
-        this.loanService.moveToRegional(this.selectedEntry.id, this.selectedRegionalOffice);
+        this.loanService.moveToRegional(this.selectedEntry.id, this.selectedRegionalOffice, this.remarks);
         this.closeModal();
       }
     }
