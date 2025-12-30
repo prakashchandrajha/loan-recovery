@@ -31,6 +31,7 @@ export interface PostEntry {
     // Division Final Stage fields
     minutesFileName?: string; // Minutes document
     reservePrice?: number; // Reserve Amount
+    saleNoticeFileName?: string; // Draft Sale Notice
     status: 'Pending' | 'Urgent' | 'Late' | 'With Recovery' | 'With Legal' | 'With RO' | 'Completed';
     currentLocation: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2' | 'RODivision';
     regionalOffice?: string;
@@ -42,6 +43,36 @@ export interface PostEntry {
     providedIn: 'root'
 })
 export class LoanService {
+    // ... (existing code)
+
+    // Send Draft Sale Notice to Legal (Auction Stage)
+    sendSaleNoticeToLegal(id: string, fileName: string, remarks: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.saleNoticeFileName = fileName;
+            entry.remarks = remarks;
+            entry.currentLocation = 'Legal';
+            entry.status = 'With Legal';
+
+            // Set 5 days deadline for Legal to vet sale notice (can be adjusted)
+            entry.legalDeadline = new Date();
+            entry.legalDeadline.setDate(entry.legalDeadline.getDate() + 5);
+
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: `Draft Sale Notice Uploaded. Sent to Legal. File: ${fileName}. Remarks: ${remarks}`
+            });
+            entry.history.push({
+                location: 'Legal',
+                timestamp: new Date(),
+                action: 'Received Draft Sale Notice for Vetting'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
     private entriesSubject = new BehaviorSubject<PostEntry[]>([]);
     entries$ = this.entriesSubject.asObservable();
 
@@ -280,6 +311,8 @@ export class LoanService {
             this.entriesSubject.next([...currentEntries]);
         }
     }
+
+
 
     // Send entry from Legal to Regional Office
     moveToRegional(id: string, regionalOffice: string, remarks?: string) {

@@ -90,16 +90,7 @@ export class RecoveryDashboardComponent implements OnInit {
     this.isSendToRO = this.activeTab === 'legal';
   }
 
-  closeModal() {
-    this.selectedEntry = null;
-    this.remarks = '';
-    this.file13bName = '';
-    this.isEditMode = false;
-    this.isUploadMode = false;
-    this.isEditRemarksMode = false;
-    this.isSendToRO = false;
-    this.selectedRegionalOffice = 'RegionalOffice1';
-  }
+
 
   onFileSelected(event: any) {
     const file = event.target.files[0];
@@ -118,10 +109,61 @@ export class RecoveryDashboardComponent implements OnInit {
     }
   }
 
+  // Auction Stage
+  draftNoticeFileName: string = '';
+  isSaleNoticeMode: boolean = false;
+
+  isAuctionMode(entry: PostEntry): boolean {
+    return !!entry.minutesFileName && !!entry.reservePrice && entry.currentLocation === 'Recovery';
+  }
+
+  onDraftNoticeSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.draftNoticeFileName = file.name;
+    }
+  }
+
+  openSaleNoticeModal(entry: PostEntry) {
+    this.selectedEntry = entry;
+    this.isSaleNoticeMode = true;
+    this.draftNoticeFileName = '';
+    this.remarks = '';
+  }
+
+  closeModal() {
+    this.selectedEntry = null;
+    this.remarks = '';
+    this.file13bName = '';
+    this.isEditMode = false;
+    this.isUploadMode = false;
+    this.isEditRemarksMode = false;
+    this.isSendToRO = false;
+    this.isSaleNoticeMode = false;
+    this.draftNoticeFileName = '';
+    this.selectedRegionalOffice = 'RegionalOffice1';
+  }
+
+  sendSaleNoticeToLegal() {
+    if (this.selectedEntry && this.draftNoticeFileName) {
+      if (confirm('Send Draft Sale Notice to Legal Cell for vetting?')) {
+        this.loanService.sendSaleNoticeToLegal(
+          this.selectedEntry.id,
+          this.draftNoticeFileName,
+          this.remarks
+        );
+        this.closeModal();
+      }
+    } else {
+      alert('Please upload Draft Sale Notice document');
+    }
+  }
+
+  // Original sendToLegal (for 13(2) and 13(4))
   sendToLegal() {
     if (this.selectedEntry && this.file13bName) {
       if (confirm('Send this file to Legal Cell with form?')) {
-        // Check if this is a 13(4) stage (file has been to RO before)
+        // ... (rest of logic)
         const hasBeenToRO = this.selectedEntry.history.some(log =>
           log.location === 'RODivision' ||
           log.location === 'RegionalOffice1' ||
