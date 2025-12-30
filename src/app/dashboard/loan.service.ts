@@ -258,18 +258,24 @@ export class LoanService {
         }
     }
 
-    // Final step: Division uploads minutes and sets reserve price
-    completeDivisionProcess(id: string, minutesFileName: string, reservePrice: number) {
+    // Final step: Division uploads minutes and sets reserve price, then sends to Recovery Cell for Auction
+    moveToRegionalFromDivision(id: string, minutesFileName: string, reservePrice: number) {
         const currentEntries = this.entriesSubject.getValue();
         const entry = currentEntries.find(e => e.id === id);
         if (entry) {
             entry.minutesFileName = minutesFileName;
             entry.reservePrice = reservePrice;
-            entry.status = 'Completed';
+            entry.status = 'Pending';
+            entry.currentLocation = 'Recovery'; // Sends to Recovery Cell
             entry.history.push({
                 location: 'Division',
                 timestamp: new Date(),
-                action: `Final Process Completed. Reserve Price: ₹${reservePrice.toLocaleString('en-IN')}, Minutes: ${minutesFileName}`
+                action: `Minutes Uploaded & Reserve Price Set (₹${reservePrice.toLocaleString('en-IN')}). Sent to Recovery Cell. File: ${minutesFileName}`
+            });
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: 'Received from Division (Minutes & Reserve Price)'
             });
             this.entriesSubject.next([...currentEntries]);
         }

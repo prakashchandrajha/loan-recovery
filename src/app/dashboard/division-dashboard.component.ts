@@ -159,7 +159,7 @@ export class DivisionDashboardComponent implements OnInit {
 
   submitCompletion() {
     if (this.selectedEntryForCompletion && this.minutesFileName && this.reservePrice > 0) {
-      this.loanService.completeDivisionProcess(
+      this.loanService.moveToRegionalFromDivision(
         this.selectedEntryForCompletion.id,
         this.minutesFileName,
         this.reservePrice
