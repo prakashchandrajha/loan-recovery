@@ -13,7 +13,10 @@ export class RegionalOffice1DashboardComponent implements OnInit {
   regionalEntries: PostEntry[] = [];
   selectedEntry: PostEntry | null = null;
   remarks: string = '';
+  valuationAmount: number = 0;
+  roValuationFileName: string = '';
   isNoticeMode: boolean = false;
+  isValuationMode: boolean = false;
 
   constructor(private loanService: LoanService) { }
 
@@ -32,7 +35,25 @@ export class RegionalOffice1DashboardComponent implements OnInit {
   closeModal() {
     this.selectedEntry = null;
     this.remarks = '';
+    this.valuationAmount = 0;
+    this.roValuationFileName = '';
     this.isNoticeMode = false;
+    this.isValuationMode = false;
+  }
+
+  openValuationForm(entry: PostEntry) {
+    this.selectedEntry = entry;
+    this.valuationAmount = entry.valuationAmount || 0;
+    this.roValuationFileName = entry.roValuationFileName || '';
+    this.remarks = entry.remarks || '';
+    this.isValuationMode = true;
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.roValuationFileName = file.name;
+    }
   }
 
   sendNotice() {
@@ -42,6 +63,32 @@ export class RegionalOffice1DashboardComponent implements OnInit {
         this.closeModal();
       }
     }
+  }
+
+  sendToDivision() {
+    if (this.selectedEntry && this.valuationAmount > 0 && this.roValuationFileName) {
+      if (confirm(`Send file back to ${this.selectedEntry.divisionId} with valuation amount ₹${this.valuationAmount.toLocaleString('en-IN')}?`)) {
+        this.loanService.moveToDivisionFromRO(
+          this.selectedEntry.id,
+          this.valuationAmount,
+          this.roValuationFileName,
+          this.remarks
+        );
+        this.closeModal();
+      }
+    } else {
+      alert('Please enter valuation amount and upload RO valuation file');
+    }
+  }
+
+  // Check if file is in 13(4) stage (second visit to RO)
+  isSecondVisit(entry: PostEntry): boolean {
+    const roVisits = entry.history.filter(log =>
+      log.location === 'RegionalOffice1' ||
+      log.location === 'RegionalOffice2' ||
+      log.location === 'RODivision'
+    );
+    return roVisits.length > 1;
   }
 
   // Helper methods for deadline tracking

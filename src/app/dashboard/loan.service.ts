@@ -25,7 +25,10 @@ export interface PostEntry {
     file13bName: string; // 13b form file name
     file13bUploadDate: Date; // Upload date for 13b form
     vettedFileName?: string; // Vetted file name from Legal Cell
-    status: 'Pending' | 'Urgent' | 'Late' | 'With Recovery' | 'With Legal' | 'With RO';
+    // RO Division fields
+    valuationAmount?: number; // Valuation amount from RO
+    roValuationFileName?: string; // RO valuation document
+    status: 'Pending' | 'Urgent' | 'Late' | 'With Recovery' | 'With Legal' | 'With RO' | 'Completed';
     currentLocation: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2' | 'RODivision';
     regionalOffice?: string;
     regionalDeadline?: Date;
@@ -223,6 +226,30 @@ export class LoanService {
                 location: 'Recovery',
                 timestamp: new Date(),
                 action: 'Received back from RO Division'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
+    // Send entry from RO Division back to original Division with valuation (final stage)
+    moveToDivisionFromRO(id: string, valuationAmount: number, roValuationFileName: string, remarks?: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.valuationAmount = valuationAmount;
+            entry.roValuationFileName = roValuationFileName;
+            entry.remarks = remarks || '';
+            entry.currentLocation = 'Division';
+            entry.status = 'Completed';
+            entry.history.push({
+                location: 'RODivision',
+                timestamp: new Date(),
+                action: `Valuation completed (₹${valuationAmount.toLocaleString('en-IN')}). RO Valuation File: ${roValuationFileName}. Sent back to ${entry.divisionId}. ${remarks ? 'Remarks: ' + remarks : ''}`
+            });
+            entry.history.push({
+                location: 'Division',
+                timestamp: new Date(),
+                action: 'File returned from RO Division with valuation'
             });
             this.entriesSubject.next([...currentEntries]);
         }
