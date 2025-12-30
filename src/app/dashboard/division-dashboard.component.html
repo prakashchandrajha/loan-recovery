@@ -186,18 +186,40 @@
 
                   <!-- Only show actions if file is still in Division -->
                   <ng-container *ngIf="entry.currentLocation === 'Division'; else readOnlyActions">
-                    <button (click)="markUrgent(entry.id)" title="Urgent Send"
-                      class="p-1.5 text-red-600 hover:bg-red-50 rounded transition">
-                      🚀
-                    </button>
-                    <button (click)="editEntry(entry)" title="Edit"
-                      class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
-                      ✏️
-                    </button>
-                    <button (click)="deleteEntry(entry.id)" title="Delete"
-                      class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
-                      🗑️
-                    </button>
+
+                    <!-- Final Stage: Returned from RO with Valuation -->
+                    <ng-container *ngIf="isReturnedFromRO(entry); else normalActions">
+                      <ng-container *ngIf="!isFullyCompleted(entry); else completedActions">
+                        <button (click)="openCompletionModal(entry)" title="Complete Process"
+                          class="px-3 py-1.5 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded transition flex items-center space-x-1">
+                          <span>🏁</span>
+                          <span>Complete</span>
+                        </button>
+                      </ng-container>
+                      <ng-template #completedActions>
+                        <span
+                          class="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-600 border border-green-200">
+                          ✅ Finalized
+                        </span>
+                      </ng-template>
+                    </ng-container>
+
+                    <!-- Normal Stage: New Entry -->
+                    <ng-template #normalActions>
+                      <button (click)="markUrgent(entry.id)" title="Urgent Send"
+                        class="p-1.5 text-red-600 hover:bg-red-50 rounded transition">
+                        🚀
+                      </button>
+                      <button (click)="editEntry(entry)" title="Edit"
+                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
+                        ✏️
+                      </button>
+                      <button (click)="deleteEntry(entry.id)" title="Delete"
+                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
+                        🗑️
+                      </button>
+                    </ng-template>
+
                   </ng-container>
 
                   <ng-template #readOnlyActions>
@@ -225,4 +247,62 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- Modal for Final completion (Minutes & Reserve Price) -->
+<div *ngIf="selectedEntryForCompletion"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4">
+    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="text-lg font-bold text-gray-800">
+        Final Process Completion
+      </h3>
+      <button (click)="closeCompletionModal()" class="text-gray-400 hover:text-gray-600">
+        <span class="text-2xl">×</span>
+      </button>
+    </div>
+
+    <div class="p-6">
+      <div class="mb-4 bg-blue-50 p-4 rounded-lg">
+        <h4 class="text-sm font-bold text-blue-800 mb-2">Valuation Details (From RO)</h4>
+        <div class="text-sm text-blue-700">
+          <p>Amount: ₹{{ selectedEntryForCompletion.valuationAmount?.toLocaleString('en-IN') }}</p>
+          <p>File: {{ selectedEntryForCompletion.roValuationFileName }}</p>
+        </div>
+      </div>
+
+      <!-- Reserve Price -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Reserve Price (₹) *</label>
+        <input type="number" [(ngModel)]="reservePrice" placeholder="Enter Reserve Price" required
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
+      </div>
+
+      <!-- Minutes File Upload -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Upload Minutes Document *</label>
+        <div class="relative">
+          <input type="file" (change)="onMinutesFileSelected($event)" accept=".pdf,.doc,.docx"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
+          <span class="absolute right-3 top-3.5 text-gray-400">📎</span>
+        </div>
+        <div *ngIf="minutesFileName" class="mt-2 text-sm text-green-600">
+          ✓ Selected: {{ minutesFileName }}
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex space-x-3">
+        <button (click)="submitCompletion()"
+          class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
+          <span>✅</span>
+          <span>Finalize & Close Case</span>
+        </button>
+        <button (click)="closeCompletionModal()"
+          class="px-6 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-colors">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

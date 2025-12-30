@@ -122,4 +122,51 @@ export class DivisionDashboardComponent implements OnInit {
     const diffTime = now.getTime() - deadline.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
+
+  // Final Stage Methods
+  selectedEntryForCompletion: PostEntry | null = null;
+  minutesFileName: string = '';
+  reservePrice: number = 0;
+
+  isReturnedFromRO(entry: PostEntry): boolean {
+    // Check if entry has returned from RO with valuation details
+    return !!entry.valuationAmount && !!entry.roValuationFileName && entry.currentLocation === 'Division';
+  }
+
+  isFullyCompleted(entry: PostEntry): boolean {
+    // Check if Division has added minutes and reserve price
+    return !!entry.minutesFileName && !!entry.reservePrice;
+  }
+
+  openCompletionModal(entry: PostEntry) {
+    this.selectedEntryForCompletion = entry;
+    this.minutesFileName = entry.minutesFileName || '';
+    this.reservePrice = entry.reservePrice || 0;
+  }
+
+  closeCompletionModal() {
+    this.selectedEntryForCompletion = null;
+    this.minutesFileName = '';
+    this.reservePrice = 0;
+  }
+
+  onMinutesFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.minutesFileName = file.name;
+    }
+  }
+
+  submitCompletion() {
+    if (this.selectedEntryForCompletion && this.minutesFileName && this.reservePrice > 0) {
+      this.loanService.completeDivisionProcess(
+        this.selectedEntryForCompletion.id,
+        this.minutesFileName,
+        this.reservePrice
+      );
+      this.closeCompletionModal();
+    } else {
+      alert('Please enter Reserve Price and upload Minutes document');
+    }
+  }
 }

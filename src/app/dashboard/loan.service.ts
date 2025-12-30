@@ -28,6 +28,9 @@ export interface PostEntry {
     // RO Division fields
     valuationAmount?: number; // Valuation amount from RO
     roValuationFileName?: string; // RO valuation document
+    // Division Final Stage fields
+    minutesFileName?: string; // Minutes document
+    reservePrice?: number; // Reserve Amount
     status: 'Pending' | 'Urgent' | 'Late' | 'With Recovery' | 'With Legal' | 'With RO' | 'Completed';
     currentLocation: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2' | 'RODivision';
     regionalOffice?: string;
@@ -250,6 +253,23 @@ export class LoanService {
                 location: 'Division',
                 timestamp: new Date(),
                 action: 'File returned from RO Division with valuation'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
+    // Final step: Division uploads minutes and sets reserve price
+    completeDivisionProcess(id: string, minutesFileName: string, reservePrice: number) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.minutesFileName = minutesFileName;
+            entry.reservePrice = reservePrice;
+            entry.status = 'Completed';
+            entry.history.push({
+                location: 'Division',
+                timestamp: new Date(),
+                action: `Final Process Completed. Reserve Price: ₹${reservePrice.toLocaleString('en-IN')}, Minutes: ${minutesFileName}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
