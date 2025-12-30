@@ -88,19 +88,13 @@
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
                             <!-- History Stack -->
-                            <div class="space-y-2">
-                                <div *ngFor="let log of entry.history" class="flex items-start space-x-2 text-xs"
-                                    [class.bg-red-50]="log.isLate" [class.pr-2]="log.isLate"
-                                    [class.rounded]="log.isLate">
-                                    <div class="mt-0.5 w-1.5 h-1.5 rounded-full"
-                                        [ngClass]="{'bg-blue-400': log.location==='Division', 'bg-purple-400': log.location==='Recovery', 'bg-red-500': log.isLate, 'bg-green-400': log.location==='Legal'}">
-                                    </div>
-                                    <div>
-                                        <span class="font-semibold text-gray-700">{{ log.location }}</span>
-                                        <span class="text-gray-400 mx-1">•</span>
-                                        <span [class.text-red-600]="log.isLate" [class.font-medium]="log.isLate">{{
-                                            log.action }}</span>
-                                        <div class="text-gray-400 text-[10px]">{{ log.timestamp | date:'short' }}</div>
+                            <div class="space-y-3">
+                                <div *ngFor="let log of entry.history" class="relative pl-3 border-l-2 border-gray-200"
+                                    [ngClass]="{'border-red-400': log.isLate, 'border-blue-400': log.location==='Division', 'border-purple-400': log.location==='Recovery', 'border-green-400': log.location==='Legal', 'border-orange-400': log.location.includes('Regional') || log.location === 'RODivision'}">
+                                    <div class="flex flex-col" [title]="log.action">
+                                        <span class="font-semibold text-xs text-gray-700">{{ log.location }}</span>
+                                        <span class="text-[10px] text-gray-400">{{ log.timestamp | date:'MMM d, h:mm a'
+                                            }}</span>
                                     </div>
                                 </div>
                             </div>
