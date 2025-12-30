@@ -114,7 +114,8 @@ export class RecoveryDashboardComponent implements OnInit {
   isSaleNoticeMode: boolean = false;
 
   isAuctionMode(entry: PostEntry): boolean {
-    return !!entry.minutesFileName && !!entry.reservePrice && entry.currentLocation === 'Recovery';
+    // Only show Draft Upload if we haven't received the vetted file yet
+    return !!entry.minutesFileName && !!entry.reservePrice && entry.currentLocation === 'Recovery' && !entry.vettedSaleNoticeFileName;
   }
 
   onDraftNoticeSelected(event: any) {
@@ -154,8 +155,20 @@ export class RecoveryDashboardComponent implements OnInit {
         );
         this.closeModal();
       }
-    } else {
       alert('Please upload Draft Sale Notice document');
+    }
+  }
+
+  isAuctionReturnMode(entry: PostEntry): boolean {
+    return !!entry.vettedSaleNoticeFileName && entry.currentLocation === 'Recovery';
+  }
+
+  sendSaleNoticeToRO() {
+    if (this.selectedEntry) {
+      if (confirm('Send Vetted Sale Notice to RO for publishing?')) {
+        this.loanService.sendSaleNoticeToRO(this.selectedEntry.id, this.remarks);
+        this.closeModal();
+      }
     }
   }
 

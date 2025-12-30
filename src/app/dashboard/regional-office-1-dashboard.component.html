@@ -88,6 +88,12 @@
                                     class="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded transition">
                                     💰 Send to Division
                                 </button>
+                                <!-- Auction Stage: Publish Sale Notice -->
+                                <button *ngIf="isAuctionStage(entry)" (click)="openPublishModal(entry)"
+                                    title="Publish Sale Notice"
+                                    class="px-3 py-1.5 text-sm font-medium text-purple-600 bg-purple-50 hover:bg-purple-100 rounded transition">
+                                    📢 Publish Sale Notice
+                                </button>
                             </ng-container>
 
                             <ng-template #readOnlyActions>
@@ -116,6 +122,7 @@
 <!-- Modal for Notice to Borrower (First Visit - 13(2)) -->
 <div *ngIf="selectedEntry && isNoticeMode"
     class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <!-- ... (existing Notice Modal) ... -->
     <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div class="p-6 border-b border-gray-200 flex justify-between items-center">
             <h3 class="text-lg font-bold text-gray-800">
@@ -259,6 +266,57 @@
                     class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
                     <span>📤</span>
                     <span>Send to Division</span>
+                </button>
+                <button (click)="closeModal()"
+                    class="px-6 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-colors">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Publishing Sale Notice (Auction Stage) -->
+<div *ngIf="selectedEntry && isPublishMode"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-purple-50 rounded-t-xl">
+            <h3 class="text-lg font-bold text-purple-900">
+                Publish Sale Notice - {{ selectedEntry.fullName }}
+            </h3>
+            <button (click)="closeModal()" class="text-gray-400 hover:text-gray-600">
+                <span class="text-2xl">×</span>
+            </button>
+        </div>
+
+        <div class="p-6">
+            <div class="mb-6 bg-purple-50 border border-purple-100 rounded p-4">
+                <div class="font-medium text-purple-900 mb-2">Instructions</div>
+                <ul class="text-sm text-purple-800 list-disc list-inside space-y-1">
+                    <li>Verify Vetted Sale Notice file.</li>
+                    <li>Publish in designated newspapers/websites.</li>
+                    <li>Confirm publication to return file to Recovery Cell for Auction.</li>
+                </ul>
+                <div *ngIf="selectedEntry.vettedSaleNoticeFileName"
+                    class="mt-3 text-sm font-mono bg-white p-2 rounded border border-purple-200">
+                    File: {{ selectedEntry.vettedSaleNoticeFileName }}
+                </div>
+            </div>
+
+            <!-- Remarks -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Publication Remarks *</label>
+                <textarea [(ngModel)]="remarks" placeholder="Enter publication details (Newspapers, Dates, etc.)"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-shadow"
+                    rows="4"></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex space-x-3">
+                <button (click)="publishNotice()"
+                    class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center space-x-2">
+                    <span>📢</span>
+                    <span>Confirm Publication</span>
                 </button>
                 <button (click)="closeModal()"
                     class="px-6 bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium py-3 rounded-lg transition-colors">

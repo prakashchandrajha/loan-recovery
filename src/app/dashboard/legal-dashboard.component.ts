@@ -70,11 +70,34 @@ export class LegalDashboardComponent implements OnInit {
     }
   }
 
+  isSaleNotice(entry: PostEntry): boolean {
+    return !!entry.saleNoticeFileName;
+  }
+
   sendBackToRecovery() {
     if (this.selectedEntry) {
-      if (confirm('Send this file back to Recovery Division?')) {
-        this.loanService.moveBackToRecovery(this.selectedEntry.id, this.remarks, this.vettedFileName);
-        this.closeModal();
+      // Require Vetted File ONLY for Sale Notices
+      if (this.isSaleNotice(this.selectedEntry) && !this.vettedFileName) {
+        alert('Please upload the Vetted File before returning to Recovery.');
+        return;
+      }
+
+      if (this.isSaleNotice(this.selectedEntry)) {
+        // Auction Stage Return
+        if (confirm('Return vetted Sale Notice to Recovery Cell?')) {
+          this.loanService.returnSaleNoticeToRecovery(
+            this.selectedEntry.id,
+            this.vettedFileName,
+            this.remarks
+          );
+          this.closeModal();
+        }
+      } else {
+        // Standard 13(2) / 13(4) Return
+        if (confirm('Send this file back to Recovery Division?')) {
+          this.loanService.moveBackToRecovery(this.selectedEntry.id, this.remarks, this.vettedFileName);
+          this.closeModal();
+        }
       }
     }
   }

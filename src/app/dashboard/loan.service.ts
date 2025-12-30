@@ -32,6 +32,7 @@ export interface PostEntry {
     minutesFileName?: string; // Minutes document
     reservePrice?: number; // Reserve Amount
     saleNoticeFileName?: string; // Draft Sale Notice
+    vettedSaleNoticeFileName?: string; // Vetted Sale Notice
     status: 'Pending' | 'Urgent' | 'Late' | 'With Recovery' | 'With Legal' | 'With RO' | 'Completed';
     currentLocation: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2' | 'RODivision';
     regionalOffice?: string;
@@ -43,6 +44,32 @@ export interface PostEntry {
     providedIn: 'root'
 })
 export class LoanService {
+    // ... (existing code)
+
+    // Return Vetted Sale Notice to Recovery
+    returnSaleNoticeToRecovery(id: string, vettedFileName: string, remarks: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.vettedSaleNoticeFileName = vettedFileName;
+            entry.remarks = remarks;
+            entry.currentLocation = 'Recovery';
+            entry.status = 'With Recovery';
+
+            entry.history.push({
+                location: 'Legal',
+                timestamp: new Date(),
+                action: `Sale Notice Vetted. Returned to Recovery. File: ${vettedFileName}. Remarks: ${remarks}`
+            });
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: 'Received Vetted Sale Notice from Legal'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
     // ... (existing code)
 
     // Send Draft Sale Notice to Legal (Auction Stage)
@@ -329,6 +356,59 @@ export class LoanService {
                 location: entry.currentLocation,
                 timestamp: new Date(),
                 action: `Sent to ${regionalOffice.replace('RegionalOffice', 'Regional Office ')}. Remarks: ${remarks || 'None'}`
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
+    // Send Vetted Sale Notice to RO Division
+    sendSaleNoticeToRO(id: string, remarks: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.remarks = remarks;
+            entry.currentLocation = 'RODivision';
+            entry.status = 'With RO';
+
+            // Set 15 days deadline for RO to publish notice
+            entry.roDeadline = new Date();
+            entry.roDeadline.setDate(entry.roDeadline.getDate() + 15);
+
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: `Vetted Sale Notice Sent to RO for Publishing. Remarks: ${remarks}`
+            });
+            entry.history.push({
+                location: 'RODivision',
+                timestamp: new Date(),
+                action: 'Received Vetted Sale Notice for Publishing'
+            });
+            this.entriesSubject.next([...currentEntries]);
+        }
+    }
+
+    // RO Division confirms Sale Notice Publication
+    confirmSaleNoticePublication(id: string, remarks: string) {
+        const currentEntries = this.entriesSubject.getValue();
+        const entry = currentEntries.find(e => e.id === id);
+        if (entry) {
+            entry.remarks = remarks;
+            entry.status = 'Completed';
+            entry.currentLocation = 'Recovery';
+            // Status for Recovery to know it's published and ready for auction
+            // Maybe add a new field or reuse status?
+            // Let's use specific action log to identify
+
+            entry.history.push({
+                location: 'RODivision',
+                timestamp: new Date(),
+                action: `Sale Notice Published. Sent back to Recovery. Remarks: ${remarks}`
+            });
+            entry.history.push({
+                location: 'Recovery',
+                timestamp: new Date(),
+                action: 'Sale Notice Published by RO'
             });
             this.entriesSubject.next([...currentEntries]);
         }

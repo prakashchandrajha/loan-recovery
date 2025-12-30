@@ -22,7 +22,10 @@ export class RegionalOffice1DashboardComponent implements OnInit {
 
   ngOnInit() {
     this.loanService.entries$.subscribe(entries => {
-      this.regionalEntries = entries.filter(e => e.currentLocation === 'RegionalOffice1');
+      this.regionalEntries = entries.filter(e =>
+        e.currentLocation === 'RegionalOffice1' ||
+        e.currentLocation === 'RODivision'
+      );
     });
   }
 
@@ -32,6 +35,26 @@ export class RegionalOffice1DashboardComponent implements OnInit {
     this.isNoticeMode = true;
   }
 
+  // Publish Sale Notice Mode
+  isPublishMode: boolean = false;
+
+  openPublishModal(entry: PostEntry) {
+    this.selectedEntry = entry;
+    this.remarks = '';
+    this.isPublishMode = true;
+    this.isNoticeMode = false;
+    this.isValuationMode = false;
+  }
+
+  publishNotice() {
+    if (this.selectedEntry) {
+      if (confirm('Confirm Sale Notice Publication?')) {
+        this.loanService.confirmSaleNoticePublication(this.selectedEntry.id, this.remarks);
+        this.closeModal();
+      }
+    }
+  }
+
   closeModal() {
     this.selectedEntry = null;
     this.remarks = '';
@@ -39,6 +62,7 @@ export class RegionalOffice1DashboardComponent implements OnInit {
     this.roValuationFileName = '';
     this.isNoticeMode = false;
     this.isValuationMode = false;
+    this.isPublishMode = false;
   }
 
   openValuationForm(entry: PostEntry) {
@@ -88,21 +112,28 @@ export class RegionalOffice1DashboardComponent implements OnInit {
       log.location === 'RegionalOffice2' ||
       log.location === 'RODivision'
     );
+    // Rough heuristic: if sectionType is 13(4) it is likely 2nd visit or later
+    // Or if vettedSaleNoticeFileName exists, it's 3rd visit (Auction)
     return roVisits.length > 1;
+  }
+
+  isAuctionStage(entry: PostEntry): boolean {
+    return !!entry.vettedSaleNoticeFileName;
   }
 
   // Helper methods for deadline tracking
   isOverdue(entry: PostEntry): boolean {
-    if (!entry.regionalDeadline) return false;
+    if (!entry.regionalDeadline && !entry.roDeadline) return false;
     const now = new Date();
-    const deadline = new Date(entry.regionalDeadline);
+    const deadline = new Date(entry.regionalDeadline || entry.roDeadline || new Date());
     return now > deadline;
   }
 
   getDaysOverdue(entry: PostEntry): number {
-    if (!entry.regionalDeadline) return 0;
+    const deadlineDate = entry.regionalDeadline || entry.roDeadline;
+    if (!deadlineDate) return 0;
     const now = new Date();
-    const deadline = new Date(entry.regionalDeadline);
+    const deadline = new Date(deadlineDate);
     const diffTime = now.getTime() - deadline.getTime();
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   }
