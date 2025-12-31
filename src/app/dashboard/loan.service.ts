@@ -45,6 +45,8 @@ export interface PostEntry {
 export interface HandoverDetails {
     // 1. Basic Details
     basicDetails: {
+        divisionName: string;
+        regionalOfficeName: string;
         borrwerName: string;
         mobileNumber: string;
         classificationDate: string;

@@ -212,69 +212,177 @@
     <div class="bg-white rounded-xl shadow-lg p-8 min-h-[500px]">
 
       <!-- 1. Basic Details -->
-      <div *ngIf="activeSection === 1" class="space-y-6">
-        <h2 class="text-xl font-bold border-b pb-2">1. Basic Details</h2>
-        <div class="grid grid-cols-2 gap-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Name of Account</label>
-            <input [(ngModel)]="handoverData.basicDetails.borrwerName" class="w-full mt-1 border rounded p-2"
-              type="text">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
-            <input [(ngModel)]="handoverData.basicDetails.mobileNumber" class="w-full mt-1 border rounded p-2"
-              type="text">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Date of Classification as NPA</label>
-            <input [(ngModel)]="handoverData.basicDetails.classificationDate" class="w-full mt-1 border rounded p-2"
-              type="date">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Business Activity</label>
-            <input [(ngModel)]="handoverData.basicDetails.businessActivity" class="w-full mt-1 border rounded p-2"
-              type="text">
-          </div>
-          <div class="col-span-2">
-            <label class="block text-sm font-medium text-gray-700">Registered Address</label>
-            <textarea [(ngModel)]="handoverData.basicDetails.registeredAddress" class="w-full mt-1 border rounded p-2"
-              rows="2"></textarea>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Factory Running?</label>
-            <select [(ngModel)]="handoverData.basicDetails.isFactoryRunning" class="w-full mt-1 border rounded p-2">
-              <option value="">Select</option>
-              <option value="Yes">Yes</option>
-              <option value="No">No</option>
-            </select>
-          </div>
-        </div>
+      <div *ngIf="activeSection === 1" class="space-y-8">
+        <h2 class="text-xl font-bold border-b pb-2 flex items-center">
+          <span
+            class="bg-blue-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+          Basic Details of the Borrower
+        </h2>
 
-        <!-- Directors Table -->
-        <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Directors / Board Members</label>
-          <table class="w-full border collapse text-sm">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="border p-2">Name</th>
-                <th class="border p-2">Designation</th>
-                <th class="border p-2">Contact</th>
-                <th class="border p-2">Address</th>
-                <th class="border p-2 w-10"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let d of handoverData.basicDetails.directors; let idx = index">
-                <td class="border p-0"><input [(ngModel)]="d.name" class="w-full p-2 outline-none"></td>
-                <td class="border p-0"><input [(ngModel)]="d.designation" class="w-full p-2 outline-none"></td>
-                <td class="border p-0"><input [(ngModel)]="d.contact" class="w-full p-2 outline-none"></td>
-                <td class="border p-0"><input [(ngModel)]="d.address" class="w-full p-2 outline-none"></td>
-                <td class="border p-1 text-center"><button (click)="removeDirector(idx)" class="text-red-500">×</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <button (click)="addDirector()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Director</button>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- a. Name of Division and Regional Office -->
+          <div class="space-y-4 col-span-2">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">a. Division & Regional Office</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Name of Division</label>
+                <input [(ngModel)]="handoverData.basicDetails.divisionName"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                  placeholder="Enter Division Name" type="text">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Regional Office</label>
+                <input [(ngModel)]="handoverData.basicDetails.regionalOfficeName"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                  placeholder="Enter Regional Office" type="text">
+              </div>
+            </div>
+          </div>
+
+          <!-- b. Name of Account and date of classification as NPA -->
+          <div class="space-y-4 col-span-2">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">b. Account Details</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Name of Account</label>
+                <input [(ngModel)]="handoverData.basicDetails.borrwerName"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                  placeholder="Borrower Society Name" type="text">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Date of Classification as NPA</label>
+                <input [(ngModel)]="handoverData.basicDetails.classificationDate"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                  type="date">
+              </div>
+            </div>
+          </div>
+
+          <!-- c. Business Activity of the society -->
+          <div class="space-y-4 col-span-2">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">c. Business Activity</h3>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Activity Details</label>
+              <input [(ngModel)]="handoverData.basicDetails.businessActivity"
+                class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                placeholder="Business Activity of the society" type="text">
+            </div>
+          </div>
+
+          <!-- d. Contact Details Table -->
+          <div class="space-y-4 col-span-2">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">d. Contact Details (Board Members)
+            </h3>
+            <div class="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 text-gray-600 font-medium border-b">
+                  <tr>
+                    <th class="px-4 py-3 border-r">Name of Chairman, President, VC, Directors...</th>
+                    <th class="px-4 py-3 border-r">Designation</th>
+                    <th class="px-4 py-3 border-r">Contact Details</th>
+                    <th class="px-4 py-3 border-r">Address</th>
+                    <th class="px-4 py-3 w-10 text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 bg-white">
+                  <tr *ngFor="let d of handoverData.basicDetails.directors; let idx = index"
+                    class="hover:bg-gray-50 transition-colors">
+                    <td class="p-0 border-r"><input [(ngModel)]="d.name"
+                        class="w-full px-4 py-3 bg-transparent outline-none border-b-2 border-transparent focus:border-blue-500 transition-all"
+                        placeholder="Enter Full Name"></td>
+                    <td class="p-0 border-r"><input [(ngModel)]="d.designation"
+                        class="w-full px-4 py-3 bg-transparent outline-none border-b-2 border-transparent focus:border-blue-500 transition-all"
+                        placeholder="Designation"></td>
+                    <td class="p-0 border-r"><input [(ngModel)]="d.contact"
+                        class="w-full px-4 py-3 bg-transparent outline-none border-b-2 border-transparent focus:border-blue-500 transition-all"
+                        placeholder="Contact/Mobile"></td>
+                    <td class="p-0 border-r"><input [(ngModel)]="d.address"
+                        class="w-full px-4 py-3 bg-transparent outline-none border-b-2 border-transparent focus:border-blue-500 transition-all"
+                        placeholder="Address"></td>
+                    <td class="p-0 text-center bg-white"><button (click)="removeDirector(idx)"
+                        class="text-red-500 hover:text-red-700 text-lg group-hover:block transition-all transform hover:scale-110">×</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="p-3 bg-gray-50 border-t">
+                <button (click)="addDirector()"
+                  class="flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors">
+                  <span class="mr-1 text-base">+</span> Add Board Member
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- e. Registered Address, Corporate office, Factory Address -->
+          <div class="space-y-4 col-span-2">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">e. Address Details</h3>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Registered Address of the Society</label>
+                <textarea [(ngModel)]="handoverData.basicDetails.registeredAddress"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                  rows="2" placeholder="Complete Registered Address"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Corporate Office of the Society</label>
+                <textarea [(ngModel)]="handoverData.basicDetails.corporateAddress"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                  rows="2" placeholder="Complete Corporate Office Address"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Factory Address</label>
+                <textarea [(ngModel)]="handoverData.basicDetails.factoryAddress"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                  rows="2" placeholder="Complete Factory Address"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- f. Whether Factory/Mill is in running condition: Yes/No, If No, since when -->
+          <div class="space-y-4 col-span-2 md:col-span-1">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">f. Operational Status</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Factory/Mill Running?</label>
+                <select [(ngModel)]="handoverData.basicDetails.isFactoryRunning"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+              <div *ngIf="handoverData.basicDetails.isFactoryRunning === 'No'">
+                <label class="block text-sm font-medium text-gray-700">If No, Since When?</label>
+                <input [(ngModel)]="handoverData.basicDetails.factoryClosedSince"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  type="date">
+              </div>
+            </div>
+          </div>
+
+          <!-- g. Whether Factory/Mill is leased out/ rented: Yes/No, If Yes, name and contact details of Lessee -->
+          <div class="space-y-4 col-span-2 md:col-span-1">
+            <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider">g. Lease Status</h3>
+            <div class="grid grid-cols-1 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Leased Out / Rented?</label>
+                <select [(ngModel)]="handoverData.basicDetails.isFactoryLeased"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all">
+                  <option value="">Select</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </div>
+              <div *ngIf="handoverData.basicDetails.isFactoryLeased === 'Yes'">
+                <label class="block text-sm font-medium text-gray-700">Lessee Details (Name & Contact)</label>
+                <input [(ngModel)]="handoverData.basicDetails.lesseeDetails"
+                  class="w-full mt-1 border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                  placeholder="Name and contact details of Lessee" type="text">
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 

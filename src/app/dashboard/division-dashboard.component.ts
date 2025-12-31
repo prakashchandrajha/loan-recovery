@@ -46,6 +46,8 @@ export class DivisionDashboardComponent implements OnInit {
   getEmptyHandoverData(): HandoverDetails {
     return {
       basicDetails: {
+        divisionName: '',
+        regionalOfficeName: '',
         borrwerName: '',
         mobileNumber: '',
         classificationDate: '',
