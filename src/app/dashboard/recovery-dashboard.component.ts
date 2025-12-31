@@ -22,6 +22,7 @@ export class RecoveryDashboardComponent implements OnInit {
   activeTab: 'division' | 'legal' | 'ro' = 'division';
   isSendToRO: boolean = false;
   selectedRegionalOffice: string = 'RegionalOffice1';
+  isForwardMode: boolean = false;
 
   constructor(private loanService: LoanService) { }
 
@@ -88,6 +89,7 @@ export class RecoveryDashboardComponent implements OnInit {
     this.isUploadMode = false;
     this.isEditRemarksMode = false;
     this.isSendToRO = this.activeTab === 'legal';
+    this.isForwardMode = true;
   }
 
 
@@ -143,6 +145,7 @@ export class RecoveryDashboardComponent implements OnInit {
     this.isSaleNoticeMode = false;
     this.draftNoticeFileName = '';
     this.selectedRegionalOffice = 'RegionalOffice1';
+    this.isForwardMode = false;
   }
 
   sendSaleNoticeToLegal() {

@@ -31,6 +31,7 @@
                         <th class="px-6 py-4 font-semibold border-b">File Details</th>
                         <th class="px-6 py-4 font-semibold border-b">NPA Date</th>
                         <th class="px-6 py-4 font-semibold border-b">Status</th>
+                        <th class="px-6 py-4 font-semibold border-b">Remarks</th>
                         <th class="px-6 py-4 font-semibold border-b">Journey History</th>
                         <th class="px-6 py-4 font-semibold border-b">Actions</th>
                     </tr>
@@ -84,6 +85,11 @@
                                 <span *ngIf="!isOverdue(entry) && getDaysRemaining(entry) <= 0" class="text-gray-500">
                                     Due: {{ entry.recoveryDeadline | date:'MMM d, y' }}
                                 </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-600 max-w-xs break-words" [title]="entry.remarks">
+                                {{ entry.remarks || 'No remarks' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
@@ -206,22 +212,24 @@
                 </div>
             </div>
 
-            <!-- 13b Form Upload -->
+            <!-- 13b Form Upload (Edit Mode Only) -->
             <div *ngIf="isUploadMode || isEditRemarksMode" class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Upload {{ activeTab === 'ro' ? '13(4)' :
-                    '13b' }} Form</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ isUploadMode ? 'Upload ' : 'Edit ' }} {{ activeTab === 'ro' ? '13(4)' : '13b' }} Form
+                </label>
                 <div class="relative">
                     <input type="file" (change)="onFileSelected($event)" accept=".pdf,.doc,.docx"
                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
                     <span class="absolute right-3 top-3.5 text-gray-400">📎</span>
                 </div>
+                <!-- Show current file -->
                 <div *ngIf="file13bName" class="mt-2 text-sm text-green-600">
-                    ✓ Selected: {{ file13bName }}
+                    ✓ Current File: {{ file13bName }}
                 </div>
             </div>
 
             <!-- Remarks -->
-            <div *ngIf="isUploadMode || isEditRemarksMode || (!isUploadMode && !isEditRemarksMode)" class="mb-6">
+            <div *ngIf="isUploadMode || isEditRemarksMode || isForwardMode" class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Remarks</label>
                 <textarea [(ngModel)]="remarks"
                     [placeholder]="isSendToRO ? 'Enter remarks for Regional Office...' : 'Enter remarks for Legal Cell...'"
@@ -230,16 +238,21 @@
             </div>
 
             <!-- Summary for Forward -->
-            <div *ngIf="!isUploadMode && !isEditRemarksMode && isSendToRO" class="mb-6">
-                <h4 class="font-semibold text-gray-700 mb-3">File Summary</h4>
+            <div *ngIf="isForwardMode && !isUploadMode && !isEditRemarksMode" class="mb-6">
+                <h4 class="font-semibold text-gray-700 mb-3">Confirmation</h4>
                 <div class="bg-gray-50 rounded-lg p-4 text-sm">
                     <div class="mb-2">
-                        <span class="text-gray-500">{{ activeTab === 'ro' ? '13(4) Form:' : '13b Form:' }}</span>
-                        <span class="ml-2 font-medium">{{ file13bName || 'Not uploaded' }}</span>
+                        <span class="text-gray-500">File to Forward:</span>
+                        <span class="ml-2 font-medium" [class.text-green-600]="file13bName"
+                            [class.text-red-600]="!file13bName">
+                            {{ file13bName || '⚠️ No file uploaded' }}
+                        </span>
                     </div>
-                    <div>
-                        <span class="text-gray-500">Remarks:</span>
-                        <span class="ml-2 font-medium">{{ remarks || 'None' }}</span>
+                    <div *ngIf="!file13bName && !isSendToRO" class="text-xs text-red-500 mt-1">
+                        Please close this window and upload a file first.
+                    </div>
+                    <div *ngIf="isSendToRO && selectedEntry.vettedFileName" class="mt-2 text-blue-600">
+                        ✓ Vetted File Included: {{ selectedEntry.vettedFileName }}
                     </div>
                 </div>
             </div>

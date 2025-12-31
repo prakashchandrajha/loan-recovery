@@ -17,6 +17,7 @@ export class LegalDashboardComponent implements OnInit {
   vettedFileName: string = '';
   isUploadMode: boolean = false;
   isEditRemarksMode: boolean = false;
+  isSendBackMode: boolean = false;
 
   constructor(private loanService: LoanService) { }
 
@@ -47,6 +48,7 @@ export class LegalDashboardComponent implements OnInit {
     this.remarks = entry.remarks || '';
     this.file13bName = entry.file13bName || '';
     this.vettedFileName = entry.vettedFileName || '';
+    this.isSendBackMode = true;
     this.isEditRemarksMode = false;
     this.isUploadMode = false;
   }
@@ -58,12 +60,16 @@ export class LegalDashboardComponent implements OnInit {
     this.vettedFileName = '';
     this.isUploadMode = false;
     this.isEditRemarksMode = false;
+    this.isSendBackMode = false;
   }
 
   updateEntry() {
     if (this.selectedEntry) {
       this.selectedEntry.remarks = this.remarks;
       this.selectedEntry.file13bName = this.file13bName;
+      if (this.vettedFileName) {
+        this.selectedEntry.vettedFileName = this.vettedFileName;
+      }
       this.selectedEntry.file13bUploadDate = new Date();
       this.loanService.updateEntry(this.selectedEntry);
       this.closeModal();
