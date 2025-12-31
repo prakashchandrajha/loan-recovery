@@ -16,6 +16,7 @@
                         <th class="px-6 py-4 font-semibold border-b">File Details</th>
                         <th class="px-6 py-4 font-semibold border-b">NPA Date</th>
                         <th class="px-6 py-4 font-semibold border-b">Status</th>
+                        <th class="px-6 py-4 font-semibold border-b">Remarks</th>
                         <th class="px-6 py-4 font-semibold border-b">Journey History</th>
                         <th class="px-6 py-4 font-semibold border-b">Actions</th>
                     </tr>
@@ -25,8 +26,14 @@
                         <td class="px-6 py-4">
                             <div class="font-medium text-gray-800">{{ entry.fullName }}</div>
                             <div class="text-sm text-gray-500">{{ entry.mobileNumber }}</div>
-                            <div *ngIf="entry.file13bName" class="mt-1 text-xs text-green-600">
-                                ✓ 13b: {{ entry.file13bName }}
+                            <div *ngIf="entry.file13bName" class="mt-1 text-xs text-gray-500">
+                                📄 Original: {{ entry.file13bName }}
+                            </div>
+                            <div *ngIf="entry.vettedFileName" class="mt-1 text-xs text-green-600 font-medium">
+                                ✓ Vetted File: {{ entry.vettedFileName }}
+                            </div>
+                            <div *ngIf="entry.vettedSaleNoticeFileName" class="mt-1 text-xs text-blue-600 font-medium">
+                                ✓ Sale Notice: {{ entry.vettedSaleNoticeFileName }}
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -51,6 +58,11 @@
                                 <span *ngIf="!isOverdue(entry)">
                                     Due: {{ entry.regionalDeadline | date:'MMM d, y' }}
                                 </span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-600 max-w-xs break-words" [title]="entry.remarks">
+                                {{ entry.remarks || 'No remarks' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-500">
