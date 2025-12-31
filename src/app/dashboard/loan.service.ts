@@ -37,7 +37,157 @@ export interface PostEntry {
     currentLocation: 'Division' | 'Recovery' | 'Legal' | 'RegionalOffice1' | 'RegionalOffice2' | 'RODivision';
     regionalOffice?: string;
     regionalDeadline?: Date;
+    // Handover Checklist Details (Office Order 15.12.2025)
+    handoverDetails?: HandoverDetails;
     history: LocationLog[];
+}
+
+export interface HandoverDetails {
+    // 1. Basic Details
+    basicDetails: {
+        borrwerName: string;
+        mobileNumber: string;
+        classificationDate: string;
+        businessActivity: string;
+        directors: DirectorDetails[];
+        registeredAddress: string;
+        corporateAddress: string;
+        factoryAddress: string;
+        isFactoryRunning: string; // 'Yes' | 'No'
+        factoryClosedSince?: string;
+        isFactoryLeased: string; // 'Yes' | 'No'
+        lesseeDetails?: string;
+    };
+    // 2. Facility Sanctioned
+    facilities: FacilityDetails[];
+    // 3. Details of Security
+    securities: SecurityDetails[];
+    // 4. Valuation & Title Search
+    valuations: ValuationDetails[];
+    // 5. Loan Documentation
+    loanDocuments: DocDetails[];
+    // 6. Release Details
+    releases: ReleaseDetails[];
+    // 7. PDC Details
+    pdcDetails: PDCDetails;
+    // 8. Original Repayment Schedule
+    originalRepaymentSchedule: RepaymentSchedule[];
+    // 9. Restructuring
+    restructuring: RestructuringDetails;
+    // 10. Revised Repayment Schedule
+    revisedRepaymentSchedule: RepaymentSchedule[];
+    // 11. SARFAESI Action
+    sarfaesiAction: SarfaesiAction;
+    // 12. Legal Cases
+    legalCases: LegalCaseDetails[];
+    // 13. Correspondences
+    correspondences: CorrespondenceDetails[];
+    // 14. Other Remarks
+    otherRemarks: string;
+}
+
+export interface DirectorDetails {
+    name: string;
+    designation: string;
+    contact: string;
+    address: string;
+}
+
+export interface FacilityDetails {
+    name: string;
+    tenor: string;
+    amount: number;
+    sanctionDate: string;
+    docDate: string;
+    disbursedAmount: number;
+    outstandingAmount: number;
+    bankingArrangement: string;
+}
+
+export interface SecurityDetails {
+    type: string;
+    assetType: string;
+    address: string;
+    chargeType: string;
+    chargeDate: string;
+    isFreeFromEncumbrances: string;
+}
+
+export interface ValuationDetails {
+    security: string;
+    titleSearchDate: string;
+    advocateName: string;
+    valuationDate: string;
+    valuerName: string;
+    fmv: number;
+    rv: number;
+    dsv: number;
+    cersaiId: string;
+    cersaiDate: string;
+}
+
+export interface DocDetails {
+    facility: string;
+    amount: number;
+    documentsExecuted: string; // Multi-line text for list of docs
+}
+
+export interface ReleaseDetails {
+    date: string;
+    againstLetter: string;
+    amount: number;
+}
+
+export interface PDCDetails {
+    isAvailable: string;
+    numberAvailable: number;
+    isPresented: string;
+    reasonNotPresented?: string;
+    isDishonored?: string;
+    checkReturnDate?: string;
+    isNoticeIssued?: string;
+    noticeDate?: string;
+    isSection138Filed?: string;
+    filingDate?: string;
+    caseNo?: string;
+    presentStatus?: string;
+    reasonNotFiled?: string;
+}
+
+export interface RepaymentSchedule {
+    installmentDate: string;
+    amount: number;
+    receiptDate: string;
+}
+
+export interface RestructuringDetails {
+    isDone: string;
+    date?: string;
+    refNo?: string;
+    terms?: string;
+    nonCompliance?: string;
+}
+
+export interface SarfaesiAction {
+    date132: string;
+    date133Reply: string;
+    date134: string;
+    saleNoticeDate: string;
+    auctionDetails: string;
+}
+
+export interface LegalCaseDetails {
+    borrowerName: string;
+    facts: string;
+    caseNo: string;
+    ndoh: string;
+    status: string;
+}
+
+export interface CorrespondenceDetails {
+    particulars: string; // Email, Letter, Visit, etc.
+    date: string;
+    outcome: string;
 }
 
 @Injectable({
@@ -118,6 +268,7 @@ export class LoanService {
 
         const currentEntries = this.entriesSubject.getValue();
         this.entriesSubject.next([...currentEntries, newEntry]);
+        return newEntry;
     }
 
     // Get entries filtered by division

@@ -1,7 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LoanService, PostEntry } from './loan.service';
+import {
+  LoanService, PostEntry, HandoverDetails,
+  DirectorDetails, FacilityDetails, SecurityDetails,
+  ValuationDetails, DocDetails, ReleaseDetails,
+  RepaymentSchedule, LegalCaseDetails, CorrespondenceDetails
+} from './loan.service';
 import { AuthService } from '../auth/auth.service';
 
 @Component({
@@ -11,17 +16,15 @@ import { AuthService } from '../auth/auth.service';
   templateUrl: './division-dashboard.component.html'
 })
 export class DivisionDashboardComponent implements OnInit {
-  currentView: 'form' | 'list' = 'form';
+  currentView: 'form' | 'list' = 'list';
+  isHandoverMode: boolean = false;
+  activeSection: number = 1; // 1 to 14
 
-  formData = {
-    fullName: '',
-    mobileNumber: '',
-    npaDate: '',
-    sectionType: '13(2)' as '13(2)' | '13(4)'
-  };
+  // Handover Form Data
+  handoverData: HandoverDetails = this.getEmptyHandoverData();
 
   entries: PostEntry[] = [];
-  editingEntryId: string | null = null;
+  selectedEntryForHandover: PostEntry | null = null;
 
   constructor(
     private loanService: LoanService,
@@ -40,56 +43,74 @@ export class DivisionDashboardComponent implements OnInit {
     });
   }
 
-  switchView(view: 'form' | 'list') {
-    this.currentView = view;
-    if (view === 'form' && !this.editingEntryId) {
-      this.resetForm();
-    }
-  }
-
-  onSubmit() {
-    if (this.formData.fullName && this.formData.mobileNumber && this.formData.npaDate) {
-      const currentUser = this.authService.getCurrentUser();
-      if (!currentUser) return;
-
-      if (this.editingEntryId) {
-        // Find and update
-        const entry = this.entries.find(e => e.id === this.editingEntryId);
-        if (entry) {
-          entry.fullName = this.formData.fullName;
-          entry.mobileNumber = this.formData.mobileNumber;
-          entry.npaDate = this.formData.npaDate;
-          entry.sectionType = this.formData.sectionType;
-          // Ideally call service.updateEntry(entry) to notify others, though object ref works locally
-          this.loanService.updateEntry(entry);
-        }
-      } else {
-        // Create new
-        this.loanService.addEntry({
-          divisionId: currentUser.username, // Set to current user's division (div1, div2, etc.)
-          fullName: this.formData.fullName,
-          mobileNumber: this.formData.mobileNumber,
-          npaDate: this.formData.npaDate,
-          sectionType: this.formData.sectionType,
-          status: 'Pending',
-          currentLocation: 'Division'
-        });
-      }
-      this.resetForm();
-      this.currentView = 'list';
-    }
-  }
-
-  editEntry(entry: PostEntry) {
-    this.editingEntryId = entry.id;
-    this.formData = {
-      fullName: entry.fullName,
-      mobileNumber: entry.mobileNumber,
-      npaDate: entry.npaDate || '',
-      sectionType: entry.sectionType
+  getEmptyHandoverData(): HandoverDetails {
+    return {
+      basicDetails: {
+        borrwerName: '',
+        mobileNumber: '',
+        classificationDate: '',
+        businessActivity: '',
+        directors: [],
+        registeredAddress: '',
+        corporateAddress: '',
+        factoryAddress: '',
+        isFactoryRunning: '',
+        isFactoryLeased: ''
+      },
+      facilities: [],
+      securities: [],
+      valuations: [],
+      loanDocuments: [],
+      releases: [],
+      pdcDetails: {
+        isAvailable: '',
+        numberAvailable: 0,
+        isPresented: ''
+      },
+      originalRepaymentSchedule: [],
+      restructuring: {
+        isDone: ''
+      },
+      revisedRepaymentSchedule: [],
+      sarfaesiAction: {
+        date132: '',
+        date133Reply: '',
+        date134: '',
+        saleNoticeDate: '',
+        auctionDetails: ''
+      },
+      legalCases: [],
+      correspondences: [],
+      otherRemarks: ''
     };
-    this.currentView = 'form';
   }
+
+  // OLD switching logic - redirected
+  switchView(view: 'form' | 'list') {
+    if (view === 'form') {
+      this.startCreateNew(); // Hijack the 'New Entry' button
+    } else {
+      this.currentView = view;
+      this.isHandoverMode = false;
+    }
+  }
+
+  // Open Handover Form in 'Create Mode' (no existing entry yet)
+  startCreateNew() {
+    this.handoverData = this.getEmptyHandoverData();
+    this.selectedEntryForHandover = null;
+
+    // Initialize one row for tables
+    this.addDirector();
+    this.addFacility();
+    this.addSecurity();
+
+    this.isHandoverMode = true;
+    this.currentView = 'list'; // Show list in background
+    this.activeSection = 1;
+  }
+
+  // Deprecated/Legacy methods removed
 
   deleteEntry(id: string) {
     if (confirm('Are you sure you want to delete this file permanently?')) {
@@ -97,17 +118,157 @@ export class DivisionDashboardComponent implements OnInit {
     }
   }
 
-  markUrgent(id: string) {
-    if (confirm('Log urgency and forward to Recovery immediately?')) {
-      this.loanService.moveToRecovery(id, true);
-      // Entry removes itself from view due to filter
+  // Updated to open Handover Checklist instead of direct transfer
+  startHandover(entry: PostEntry) {
+    this.selectedEntryForHandover = entry;
+    // Pre-fill basic details if possible
+    this.handoverData = this.getEmptyHandoverData();
+    this.handoverData.basicDetails.borrwerName = entry.fullName;
+    this.handoverData.basicDetails.classificationDate = entry.npaDate;
+
+    // Add one empty row for arrays
+    this.addDirector();
+    this.addFacility();
+    this.addSecurity();
+
+    this.isHandoverMode = true;
+    this.currentView = 'list'; // Keep list view visible in background or just switch context
+    this.activeSection = 1;
+  }
+
+  cancelHandover() {
+    this.isHandoverMode = false;
+    this.selectedEntryForHandover = null;
+  }
+
+  submitHandover(isUrgent: boolean = false) {
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) return;
+
+    if (this.selectedEntryForHandover) {
+      // Update EXISTING entry
+      this.selectedEntryForHandover.handoverDetails = this.handoverData;
+      // Sync basic fields back to entry for list display
+      this.selectedEntryForHandover.fullName = this.handoverData.basicDetails.borrwerName;
+      this.selectedEntryForHandover.mobileNumber = this.handoverData.basicDetails.mobileNumber;
+      this.selectedEntryForHandover.npaDate = this.handoverData.basicDetails.classificationDate;
+
+      this.loanService.updateEntry(this.selectedEntryForHandover);
+
+      // Move to Recovery
+      if (confirm(`Submit Handover Checklist and forward to Recovery${isUrgent ? ' (URGENT)' : ''}?`)) {
+        this.loanService.moveToRecovery(this.selectedEntryForHandover.id, isUrgent);
+        this.isHandoverMode = false;
+        this.selectedEntryForHandover = null;
+      }
+    } else {
+      // Create NEW Entry from Handover Data
+      const newEntry = this.loanService.addEntry({
+        divisionId: currentUser.username,
+        fullName: this.handoverData.basicDetails.borrwerName || 'New Borrower',
+        mobileNumber: this.handoverData.basicDetails.mobileNumber || '',
+        npaDate: this.handoverData.basicDetails.classificationDate || new Date().toISOString().split('T')[0],
+        sectionType: '13(2)', // Default, or considered derived
+        status: 'Pending',
+        currentLocation: 'Division',
+        handoverDetails: this.handoverData
+      });
+
+      if (confirm(`Entry Created. Forward to Recovery Cell now${isUrgent ? ' (URGENT)' : ''}?`)) {
+        this.loanService.moveToRecovery(newEntry.id, isUrgent);
+      }
+
+      this.isHandoverMode = false;
     }
   }
 
-  resetForm() {
-    this.formData = { fullName: '', mobileNumber: '', npaDate: '', sectionType: '13(2)' };
-    this.editingEntryId = null;
+  // Dynamic Form Helpers
+  addDirector() {
+    this.handoverData.basicDetails.directors.push({ name: '', designation: '', contact: '', address: '' });
   }
+  removeDirector(index: number) {
+    this.handoverData.basicDetails.directors.splice(index, 1);
+  }
+
+  addFacility() {
+    this.handoverData.facilities.push({
+      name: '', tenor: '', amount: 0, sanctionDate: '',
+      docDate: '', disbursedAmount: 0, outstandingAmount: 0, bankingArrangement: ''
+    });
+  }
+  removeFacility(index: number) {
+    this.handoverData.facilities.splice(index, 1);
+  }
+
+  addSecurity() {
+    this.handoverData.securities.push({
+      type: '', assetType: '', address: '', chargeType: '', chargeDate: '', isFreeFromEncumbrances: ''
+    });
+  }
+  removeSecurity(index: number) {
+    this.handoverData.securities.splice(index, 1);
+  }
+
+  addValuation() {
+    this.handoverData.valuations.push({
+      security: '', titleSearchDate: '', advocateName: '', valuationDate: '',
+      valuerName: '', fmv: 0, rv: 0, dsv: 0, cersaiId: '', cersaiDate: ''
+    });
+  }
+  removeValuation(index: number) {
+    this.handoverData.valuations.splice(index, 1);
+  }
+
+  addLoanDoc() {
+    this.handoverData.loanDocuments.push({ facility: '', amount: 0, documentsExecuted: '' });
+  }
+  removeLoanDoc(index: number) {
+    this.handoverData.loanDocuments.splice(index, 1);
+  }
+
+  addRelease() {
+    this.handoverData.releases.push({ date: '', againstLetter: '', amount: 0 });
+  }
+  removeRelease(index: number) {
+    this.handoverData.releases.splice(index, 1);
+  }
+
+  addOriginalRepayment() {
+    this.handoverData.originalRepaymentSchedule.push({ installmentDate: '', amount: 0, receiptDate: '' });
+  }
+  removeOriginalRepayment(index: number) {
+    this.handoverData.originalRepaymentSchedule.splice(index, 1);
+  }
+
+  addRevisedRepayment() {
+    this.handoverData.revisedRepaymentSchedule.push({ installmentDate: '', amount: 0, receiptDate: '' });
+  }
+  removeRevisedRepayment(index: number) {
+    this.handoverData.revisedRepaymentSchedule.splice(index, 1);
+  }
+
+  addLegalCase() {
+    this.handoverData.legalCases.push({ borrowerName: '', facts: '', caseNo: '', ndoh: '', status: '' });
+  }
+  removeLegalCase(index: number) {
+    this.handoverData.legalCases.splice(index, 1);
+  }
+
+  addCorrespondence() {
+    this.handoverData.correspondences.push({ particulars: '', date: '', outcome: '' });
+  }
+  removeCorrespondence(index: number) {
+    this.handoverData.correspondences.splice(index, 1);
+  }
+
+  // Backwards compatibility for the original markUrgent if needed, but we'll use startHandover now
+  markUrgent(id: string) {
+    // Redirect to handover form instead of immediate send
+    const entry = this.entries.find(e => e.id === id);
+    if (entry) this.startHandover(entry);
+  }
+
+
 
   // Helper methods for deadline tracking
   isOverdue(entry: PostEntry): boolean {

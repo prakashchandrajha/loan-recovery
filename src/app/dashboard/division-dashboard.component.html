@@ -33,80 +33,7 @@
       </div>
     </div>
 
-    <!-- Form View -->
-    <div *ngIf="currentView === 'form'" class="max-w-2xl mx-auto">
-      <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 md:p-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-6">
-          {{ editingEntryId ? 'Update Recovery Entry' : 'New Recovery Entry' }}
-        </h2>
-
-        <form (ngSubmit)="onSubmit()">
-          <!-- Name -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-            <div class="relative">
-              <input type="text" [(ngModel)]="formData.fullName" name="fullName" placeholder="Enter full name" required
-                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
-              <span class="absolute left-3 top-3.5 text-gray-400">👤</span>
-            </div>
-          </div>
-
-          <!-- Mobile -->
-          <div class="mb-8">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
-            <div class="relative">
-              <input type="tel" [(ngModel)]="formData.mobileNumber" name="mobileNumber"
-                placeholder="Enter mobile number" required
-                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
-              <span class="absolute left-3 top-3.5 text-gray-400">📞</span>
-            </div>
-          </div>
-
-          <!-- NPA Date -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">NPA Date</label>
-            <div class="relative">
-              <input type="date" [(ngModel)]="formData.npaDate" name="npaDate" required
-                class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow" />
-              <span class="absolute left-3 top-3.5 text-gray-400">📅</span>
-            </div>
-          </div>
-
-          <!-- Section Type -->
-          <!-- <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Section Type</label>
-            <div class="flex space-x-4">
-              <label class="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" [(ngModel)]="formData.sectionType" name="sectionType" value="13(2)" required
-                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
-                <span class="text-sm font-medium text-gray-700">Section 13(2)</span>
-                <span class="text-xs text-gray-500">(27 days Recovery)</span>
-              </label>
-              <label class="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" [(ngModel)]="formData.sectionType" name="sectionType" value="13(4)" required
-                  class="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
-                <span class="text-sm font-medium text-gray-700">Section 13(4)</span>
-                <span class="text-xs text-gray-500">(75 days Recovery)</span>
-              </label>
-            </div>
-          </div> -->
-
-          <!-- Actions -->
-          <button type="submit"
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors shadow-sm flex justify-center items-center space-x-2">
-            <span>{{ editingEntryId ? 'Update Entry' : 'Send to Recovery Division' }}</span>
-            <span>→</span>
-          </button>
-
-          <button *ngIf="editingEntryId" type="button" (click)="resetForm(); currentView='list'"
-            class="w-full mt-3 text-gray-500 hover:text-gray-700 py-2">
-            Cancel
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <!-- List View -->
+    <!-- List View only, Form view is now the Modal -->
     <div *ngIf="currentView === 'list'" class="max-w-6xl mx-auto">
       <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="p-6 border-b border-gray-200 flex justify-between items-center bg-gray-50">
@@ -201,18 +128,23 @@
 
                     <!-- Normal Stage: New Entry -->
                     <ng-template #normalActions>
-                      <button (click)="markUrgent(entry.id)" title="Urgent Send"
-                        class="p-1.5 text-red-600 hover:bg-red-50 rounded transition">
-                        🚀
-                      </button>
-                      <button (click)="editEntry(entry)" title="Edit"
-                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition">
-                        ✏️
-                      </button>
-                      <button (click)="deleteEntry(entry.id)" title="Delete"
-                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition">
-                        🗑️
-                      </button>
+                      <!-- Actions (Standard) -->
+                      <div class="flex space-x-2">
+                        <button (click)="startHandover(entry)" class="text-blue-600 hover:text-blue-800" title="Edit">
+                          ✏️
+                        </button>
+                        <button (click)="deleteEntry(entry.id)" class="text-red-600 hover:text-red-800" title="Delete">
+                          🗑️
+                        </button>
+                        <button (click)="startHandover(entry)"
+                          class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium hover:bg-green-200 transition">
+                          Start Handover
+                        </button>
+                        <button (click)="markUrgent(entry.id)"
+                          class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium hover:bg-red-200 transition">
+                          Urgent Handover
+                        </button>
+                      </div>
                     </ng-template>
 
                   </ng-container>
@@ -230,7 +162,7 @@
                 <td colspan="4" class="px-6 py-12 text-center text-gray-500">
                   <div class="flex flex-col items-center justify-center space-y-3">
                     <span class="text-4xl">📭</span>
-                    <p>No active files in Division.</p>
+                    <p>No files found. add a new file to get started.</p>
                     <button (click)="switchView('form')" class="text-blue-600 hover:underline text-sm">Create new
                       entry</button>
                   </div>
@@ -242,6 +174,462 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- HANDOVER CHECKLIST FORM MODAL/OVERLAY -->
+<div *ngIf="isHandoverMode" class="fixed inset-0 bg-gray-100 z-50 overflow-y-auto">
+  <div class="max-w-7xl mx-auto p-8">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-800">Handover Checklist Document</h1>
+        <p class="text-gray-600">File: {{ selectedEntryForHandover?.fullName || 'New Entry' }} | Division -> Recovery
+          Cell</p>
+      </div>
+      <div class="space-x-3">
+        <button (click)="cancelHandover()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
+          Cancel
+        </button>
+        <button (click)="submitHandover(false)" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+          Submit & Forward
+        </button>
+        <button (click)="submitHandover(true)" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+          Urgent Forward
+        </button>
+      </div>
+    </div>
+
+    <!-- Section Navigation -->
+    <div class="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-200 mb-6 overflow-x-auto">
+      <div class="flex space-x-1 p-2">
+        <button *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12,13,14]" (click)="activeSection = i"
+          [class.bg-blue-600]="activeSection === i" [class.text-white]="activeSection === i"
+          [class.bg-gray-50]="activeSection !== i" [class.text-gray-600]="activeSection !== i"
+          class="px-3 py-2 text-sm font-medium rounded whitespace-nowrap hover:bg-blue-50 transition-colors">
+          {{ i }}. {{ ['Basic', 'Facility', 'Security', 'Valuation', 'Docs', 'Release', 'PDCs', 'Repay Original',
+          'Restruct', 'Repay Revised', 'SARFAESI', 'Cases', 'Corres', 'Remarks'][i-1] }}
+        </button>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8 min-h-[500px]">
+
+      <!-- 1. Basic Details -->
+      <div *ngIf="activeSection === 1" class="space-y-6">
+        <h2 class="text-xl font-bold border-b pb-2">1. Basic Details</h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Name of Account</label>
+            <input [(ngModel)]="handoverData.basicDetails.borrwerName" class="w-full mt-1 border rounded p-2"
+              type="text">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Mobile Number</label>
+            <input [(ngModel)]="handoverData.basicDetails.mobileNumber" class="w-full mt-1 border rounded p-2"
+              type="text">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Date of Classification as NPA</label>
+            <input [(ngModel)]="handoverData.basicDetails.classificationDate" class="w-full mt-1 border rounded p-2"
+              type="date">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Business Activity</label>
+            <input [(ngModel)]="handoverData.basicDetails.businessActivity" class="w-full mt-1 border rounded p-2"
+              type="text">
+          </div>
+          <div class="col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Registered Address</label>
+            <textarea [(ngModel)]="handoverData.basicDetails.registeredAddress" class="w-full mt-1 border rounded p-2"
+              rows="2"></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Factory Running?</label>
+            <select [(ngModel)]="handoverData.basicDetails.isFactoryRunning" class="w-full mt-1 border rounded p-2">
+              <option value="">Select</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Directors Table -->
+        <div class="mt-4">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Directors / Board Members</label>
+          <table class="w-full border collapse text-sm">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="border p-2">Name</th>
+                <th class="border p-2">Designation</th>
+                <th class="border p-2">Contact</th>
+                <th class="border p-2">Address</th>
+                <th class="border p-2 w-10"></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let d of handoverData.basicDetails.directors; let idx = index">
+                <td class="border p-0"><input [(ngModel)]="d.name" class="w-full p-2 outline-none"></td>
+                <td class="border p-0"><input [(ngModel)]="d.designation" class="w-full p-2 outline-none"></td>
+                <td class="border p-0"><input [(ngModel)]="d.contact" class="w-full p-2 outline-none"></td>
+                <td class="border p-0"><input [(ngModel)]="d.address" class="w-full p-2 outline-none"></td>
+                <td class="border p-1 text-center"><button (click)="removeDirector(idx)" class="text-red-500">×</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <button (click)="addDirector()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Director</button>
+        </div>
+      </div>
+
+      <!-- 2. Facility Sanctioned -->
+      <div *ngIf="activeSection === 2">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">2. Facility Sanctioned</h2>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Facility Name</th>
+              <th class="border p-2">Tenor</th>
+              <th class="border p-2">Amount</th>
+              <th class="border p-2">Sanction Date</th>
+              <th class="border p-2 text-xs">O/S Amount</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let f of handoverData.facilities; let idx = index">
+              <td class="border p-0"><input [(ngModel)]="f.name" class="w-full p-2 outline-none"
+                  placeholder="e.g. Term Loan"></td>
+              <td class="border p-0"><input [(ngModel)]="f.tenor" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="f.amount" type="number" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="f.sanctionDate" type="date" class="w-full p-2 outline-none">
+              </td>
+              <td class="border p-0"><input [(ngModel)]="f.outstandingAmount" type="number"
+                  class="w-full p-2 outline-none"></td>
+              <td class="border p-1 text-center"><button (click)="removeFacility(idx)" class="text-red-500">×</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addFacility()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Facility</button>
+      </div>
+
+      <!-- 3. Details of Security -->
+      <div *ngIf="activeSection === 3">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">3. Details of Security</h2>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Type</th>
+              <th class="border p-2">Asset Type</th>
+              <th class="border p-2">Address/Details</th>
+              <th class="border p-2">Charge Type</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of handoverData.securities; let idx = index">
+              <td class="border p-0"><input [(ngModel)]="s.type" class="w-full p-2 outline-none"
+                  placeholder="Land/Stock"></td>
+              <td class="border p-0"><input [(ngModel)]="s.assetType" class="w-full p-2 outline-none"
+                  placeholder="Movable/Immovable"></td>
+              <td class="border p-0"><input [(ngModel)]="s.address" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="s.chargeType" class="w-full p-2 outline-none"
+                  placeholder="First/Pari-passu"></td>
+              <td class="border p-1 text-center"><button (click)="removeSecurity(idx)" class="text-red-500">×</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addSecurity()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Security</button>
+      </div>
+
+      <!-- 4. Valuation -->
+      <div *ngIf="activeSection === 4">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">4. Valuation & Title Search</h2>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Security</th>
+              <th class="border p-2">TSR Date</th>
+              <th class="border p-2">Advocate</th>
+              <th class="border p-2">Valuation Date</th>
+              <th class="border p-2 text-xs">FMV</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of handoverData.valuations; let idx = index">
+              <td class="border p-0"><input [(ngModel)]="v.security" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="v.titleSearchDate" type="date" class="w-full p-2 outline-none">
+              </td>
+              <td class="border p-0"><input [(ngModel)]="v.advocateName" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="v.valuationDate" type="date" class="w-full p-2 outline-none">
+              </td>
+              <td class="border p-0"><input [(ngModel)]="v.fmv" type="number" class="w-full p-2 outline-none"></td>
+              <td class="border p-1 text-center"><button (click)="removeValuation(idx)" class="text-red-500">×</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addValuation()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Valuation</button>
+      </div>
+
+      <!-- 5. Loan Documentation -->
+      <div *ngIf="activeSection === 5">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">5. Loan Documentation</h2>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Facility</th>
+              <th class="border p-2">Documents Executed (Date & Name)</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let d of handoverData.loanDocuments; let idx = index">
+              <td class="border p-0 w-1/4"><input [(ngModel)]="d.facility" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><textarea [(ngModel)]="d.documentsExecuted" class="w-full p-2 outline-none"
+                  rows="2"></textarea></td>
+              <td class="border p-1 text-center"><button (click)="removeLoanDoc(idx)" class="text-red-500">×</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addLoanDoc()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Document
+          Details</button>
+      </div>
+
+      <!-- 6. Release Details -->
+      <div *ngIf="activeSection === 6">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">6. Release Details</h2>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Date</th>
+              <th class="border p-2">Against Release Letter</th>
+              <th class="border p-2">Amount</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of handoverData.releases; let idx = index">
+              <td class="border p-0"><input [(ngModel)]="r.date" type="date" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="r.againstLetter" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="r.amount" type="number" class="w-full p-2 outline-none"></td>
+              <td class="border p-1 text-center"><button (click)="removeRelease(idx)" class="text-red-500">×</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addRelease()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Release</button>
+      </div>
+
+      <!-- 7. PDC Details -->
+      <div *ngIf="activeSection === 7" class="space-y-6">
+        <h2 class="text-xl font-bold border-b pb-2">7. Post Dated Cheques (PDC)</h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">PDC Available?</label>
+            <select [(ngModel)]="handoverData.pdcDetails.isAvailable" class="w-full mt-1 border rounded p-2">
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Number Available</label>
+            <input [(ngModel)]="handoverData.pdcDetails.numberAvailable" type="number"
+              class="w-full mt-1 border rounded p-2">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Section 138 Filed?</label>
+            <select [(ngModel)]="handoverData.pdcDetails.isSection138Filed" class="w-full mt-1 border rounded p-2">
+              <option value="">Select</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          <div *ngIf="handoverData.pdcDetails.isSection138Filed === 'Yes'">
+            <label class="block text-sm font-medium text-gray-700">Case No</label>
+            <input [(ngModel)]="handoverData.pdcDetails.caseNo" type="text" class="w-full mt-1 border rounded p-2">
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Original Repayment Schedule -->
+      <div *ngIf="activeSection === 8">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">8. Original Repayment Schedule</h2>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Installment Date</th>
+              <th class="border p-2">Amount</th>
+              <th class="border p-2">Actual Receipt Date</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of handoverData.originalRepaymentSchedule; let idx = index">
+              <td class="border p-0"><input [(ngModel)]="s.installmentDate" type="date" class="w-full p-2 outline-none">
+              </td>
+              <td class="border p-0"><input [(ngModel)]="s.amount" type="number" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="s.receiptDate" type="date" class="w-full p-2 outline-none">
+              </td>
+              <td class="border p-1 text-center"><button (click)="removeOriginalRepayment(idx)"
+                  class="text-red-500">×</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addOriginalRepayment()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Row</button>
+      </div>
+
+      <!-- 9. Restructuring -->
+      <div *ngIf="activeSection === 9" class="space-y-6">
+        <h2 class="text-xl font-bold border-b pb-2">9. Restructuring</h2>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Restructuring Done?</label>
+          <select [(ngModel)]="handoverData.restructuring.isDone" class="w-full mt-1 border rounded p-2">
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div *ngIf="handoverData.restructuring.isDone === 'Yes'" class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Date</label>
+            <input [(ngModel)]="handoverData.restructuring.date" type="date" class="w-full mt-1 border rounded p-2">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Reference No</label>
+            <input [(ngModel)]="handoverData.restructuring.refNo" type="text" class="w-full mt-1 border rounded p-2">
+          </div>
+        </div>
+      </div>
+
+      <!-- 10. Revised Repayment -->
+      <div *ngIf="activeSection === 10">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">10. Revised Repayment Schedule</h2>
+        <div *ngIf="handoverData.restructuring.isDone !== 'Yes'" class="text-gray-500 italic mb-4">Applicable only if
+          restructuring was done.</div>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Installment Date</th>
+              <th class="border p-2">Amount</th>
+              <th class="border p-2">Actual Receipt Date</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of handoverData.revisedRepaymentSchedule; let idx = index">
+              <td class="border p-0"><input [(ngModel)]="s.installmentDate" type="date" class="w-full p-2 outline-none">
+              </td>
+              <td class="border p-0"><input [(ngModel)]="s.amount" type="number" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="s.receiptDate" type="date" class="w-full p-2 outline-none">
+              </td>
+              <td class="border p-1 text-center"><button (click)="removeRevisedRepayment(idx)"
+                  class="text-red-500">×</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addRevisedRepayment()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Row</button>
+      </div>
+
+      <!-- 11. SARFAESI Action -->
+      <div *ngIf="activeSection === 11" class="space-y-6">
+        <h2 class="text-xl font-bold border-b pb-2">11. SARFAESI Action Taken</h2>
+        <div class="grid grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Date of 13(2) Notice</label>
+            <input [(ngModel)]="handoverData.sarfaesiAction.date132" type="date" class="w-full mt-1 border rounded p-2">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Date of 13(3) Reply</label>
+            <input [(ngModel)]="handoverData.sarfaesiAction.date133Reply" type="date"
+              class="w-full mt-1 border rounded p-2">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Date of 13(4) Notice</label>
+            <input [(ngModel)]="handoverData.sarfaesiAction.date134" type="date" class="w-full mt-1 border rounded p-2">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Sale Notice Date</label>
+            <input [(ngModel)]="handoverData.sarfaesiAction.saleNoticeDate" type="date"
+              class="w-full mt-1 border rounded p-2">
+          </div>
+        </div>
+      </div>
+
+      <!-- 12. Legal Cases -->
+      <div *ngIf="activeSection === 12">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">12. Pending Legal Cases</h2>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Borrower</th>
+              <th class="border p-2">Case No</th>
+              <th class="border p-2">NDOH</th>
+              <th class="border p-2">Status</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of handoverData.legalCases; let idx = index">
+              <td class="border p-0"><input [(ngModel)]="c.borrowerName" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="c.caseNo" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="c.ndoh" type="date" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="c.status" class="w-full p-2 outline-none"></td>
+              <td class="border p-1 text-center"><button (click)="removeLegalCase(idx)" class="text-red-500">×</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addLegalCase()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Case</button>
+      </div>
+
+      <!-- 13. Correspondences -->
+      <div *ngIf="activeSection === 13">
+        <h2 class="text-xl font-bold border-b pb-2 mb-4">13. Correspondences</h2>
+        <table class="w-full border collapse text-sm">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="border p-2">Particulars (Email/Letter)</th>
+              <th class="border p-2">Date</th>
+              <th class="border p-2">Outcome/Remarks</th>
+              <th class="border p-2 w-10"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of handoverData.correspondences; let idx = index">
+              <td class="border p-0"><input [(ngModel)]="c.particulars" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="c.date" type="date" class="w-full p-2 outline-none"></td>
+              <td class="border p-0"><input [(ngModel)]="c.outcome" class="w-full p-2 outline-none"></td>
+              <td class="border p-1 text-center"><button (click)="removeCorrespondence(idx)"
+                  class="text-red-500">×</button></td>
+            </tr>
+          </tbody>
+        </table>
+        <button (click)="addCorrespondence()" class="mt-2 text-sm text-blue-600 hover:underline">+ Add Row</button>
+      </div>
+
+      <!-- 14. Other Remarks -->
+      <div *ngIf="activeSection === 14" class="space-y-6">
+        <h2 class="text-xl font-bold border-b pb-2">14. Other Remarks</h2>
+        <textarea [(ngModel)]="handoverData.otherRemarks" class="w-full border rounded p-4 h-40"
+          placeholder="Any other relevant comments..."></textarea>
+      </div>
+
+      <div class="mt-8 flex justify-between">
+        <button *ngIf="activeSection > 1" (click)="activeSection = activeSection - 1"
+          class="px-4 py-2 border rounded hover:bg-gray-50">← Previous</button>
+        <div *ngIf="activeSection < 14" class="flex-1"></div>
+        <button *ngIf="activeSection < 14" (click)="activeSection = activeSection + 1"
+          class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Next →</button>
+        <button *ngIf="activeSection === 14" (click)="submitHandover(false)"
+          class="px-6 py-2 bg-green-600 text-white font-bold rounded hover:bg-green-700">Finish & Submit</button>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- Modal for Final completion (Minutes & Reserve Price) -->
