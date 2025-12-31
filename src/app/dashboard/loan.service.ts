@@ -60,14 +60,9 @@ export class LoanService {
             entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 10);
 
             entry.history.push({
-                location: 'Legal',
-                timestamp: new Date(),
-                action: `Sale Notice Vetted. Returned to Recovery. File: ${vettedFileName}. Remarks: ${remarks}`
-            });
-            entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: 'Received Vetted Sale Notice from Legal'
+                action: `Received Vetted Sale Notice from Legal. File: ${vettedFileName}. Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -90,14 +85,9 @@ export class LoanService {
             entry.legalDeadline.setDate(entry.legalDeadline.getDate() + 20);
 
             entry.history.push({
-                location: 'Recovery',
-                timestamp: new Date(),
-                action: `Draft Sale Notice Uploaded. Sent to Legal. File: ${fileName}. Remarks: ${remarks}`
-            });
-            entry.history.push({
                 location: 'Legal',
                 timestamp: new Date(),
-                action: 'Received Draft Sale Notice for Vetting'
+                action: `Received Draft Sale Notice for Vetting. File: ${fileName}. Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -186,15 +176,11 @@ export class LoanService {
             entry.legalDeadline = new Date();
             const daysToAdd = entry.sectionType === '13(2)' ? 7 : 15;
             entry.legalDeadline.setDate(entry.legalDeadline.getDate() + daysToAdd);
-            entry.history.push({
-                location: 'Recovery',
-                timestamp: new Date(),
-                action: `${entry.sectionType} Form Uploaded: ${file13bName}. Sent to Legal Cell. Remarks: ${remarks}`
-            });
+
             entry.history.push({
                 location: 'Legal',
                 timestamp: new Date(),
-                action: 'Received from Recovery'
+                action: `Received from Recovery. ${entry.sectionType} Form Uploaded: ${file13bName}. Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -213,15 +199,11 @@ export class LoanService {
             // Set 1 day deadline for Recovery Division to review and forward to RO
             entry.recoveryDeadline = new Date();
             entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 1);
-            entry.history.push({
-                location: 'Legal',
-                timestamp: new Date(),
-                action: `Vetted and sent back to Recovery. ${vettedFileName ? 'Vetted File: ' + vettedFileName + '. ' : ''}Remarks: ${remarks}`
-            });
+
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: 'Received back from Legal Cell'
+                action: `Received back from Legal Cell. ${vettedFileName ? 'Vetted File: ' + vettedFileName + '. ' : ''}Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -237,15 +219,11 @@ export class LoanService {
             // Set 1 day deadline for Recovery to process
             entry.recoveryDeadline = new Date();
             entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 1);
-            entry.history.push({
-                location: entry.currentLocation,
-                timestamp: new Date(),
-                action: `Notice sent to borrower. Sent back to Recovery. Remarks: ${remarks}`
-            });
+
             entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: 'Received back from Regional Office'
+                action: `Received back from Regional Office. Notice sent to borrower. Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -260,14 +238,9 @@ export class LoanService {
             entry.currentLocation = 'RODivision';
             entry.status = 'With RO';
             entry.history.push({
-                location: 'Recovery',
-                timestamp: new Date(),
-                action: `Sent to RO Division for notice issuance. Remarks: ${remarks || 'None'}`
-            });
-            entry.history.push({
                 location: 'RODivision',
                 timestamp: new Date(),
-                action: 'Received from Recovery Division'
+                action: `Received from Recovery Division. Remarks: ${remarks || 'None'}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -282,14 +255,9 @@ export class LoanService {
             entry.currentLocation = 'Recovery';
             entry.status = 'Pending';
             entry.history.push({
-                location: 'RODivision',
-                timestamp: new Date(),
-                action: `Notice issued to borrower. Sent back to Recovery. Remarks: ${remarks}`
-            });
-            entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: 'Received back from RO Division'
+                action: `Received back from RO Division. Notice issued to borrower. Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -307,15 +275,11 @@ export class LoanService {
             entry.status = 'Pending'; // 13(4) Final Stage: Division has 7 days
             entry.deadlineDate = new Date();
             entry.deadlineDate.setDate(entry.deadlineDate.getDate() + 7);
-            entry.history.push({
-                location: 'RODivision',
-                timestamp: new Date(),
-                action: `Valuation completed (₹${valuationAmount.toLocaleString('en-IN')}). RO Valuation File: ${roValuationFileName}. Sent back to ${entry.divisionId}. ${remarks ? 'Remarks: ' + remarks : ''}`
-            });
+
             entry.history.push({
                 location: 'Division',
                 timestamp: new Date(),
-                action: 'File returned from RO Division with valuation'
+                action: `File returned from RO Division with valuation (₹${valuationAmount.toLocaleString('en-IN')}). RO Valuation File: ${roValuationFileName}. ${remarks ? 'Remarks: ' + remarks : ''}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -334,14 +298,9 @@ export class LoanService {
             entry.recoveryDeadline = new Date();
             entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 15);
             entry.history.push({
-                location: 'Division',
-                timestamp: new Date(),
-                action: `Minutes Uploaded & Reserve Price Set (₹${reservePrice.toLocaleString('en-IN')}). Sent to Recovery Cell. File: ${minutesFileName}`
-            });
-            entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: 'Received from Division (Minutes & Reserve Price)'
+                action: `Received from Division (Minutes & Reserve Price). Minutes Uploaded & Reserve Price Set (₹${reservePrice.toLocaleString('en-IN')}). File: ${minutesFileName}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -364,7 +323,7 @@ export class LoanService {
             entry.history.push({
                 location: entry.currentLocation,
                 timestamp: new Date(),
-                action: `Sent to ${regionalOffice.replace('RegionalOffice', 'Regional Office ')}. Remarks: ${remarks || 'None'}`
+                action: `Received from Legal. Sent to ${regionalOffice.replace('RegionalOffice', 'Regional Office ')}. Remarks: ${remarks || 'None'}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -384,14 +343,9 @@ export class LoanService {
             entry.roDeadline.setDate(entry.roDeadline.getDate() + 30);
 
             entry.history.push({
-                location: 'Recovery',
-                timestamp: new Date(),
-                action: `Vetted Sale Notice Sent to RO for Publishing. Remarks: ${remarks}`
-            });
-            entry.history.push({
                 location: 'RODivision',
                 timestamp: new Date(),
-                action: 'Received Vetted Sale Notice for Publishing'
+                action: `Received Vetted Sale Notice for Publishing. Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
@@ -410,14 +364,9 @@ export class LoanService {
             // Let's use specific action log to identify
 
             entry.history.push({
-                location: 'RODivision',
-                timestamp: new Date(),
-                action: `Sale Notice Published. Sent back to Recovery. Remarks: ${remarks}`
-            });
-            entry.history.push({
                 location: 'Recovery',
                 timestamp: new Date(),
-                action: 'Sale Notice Published by RO'
+                action: `Sale Notice Published by RO. Remarks: ${remarks}`
             });
             this.entriesSubject.next([...currentEntries]);
         }
