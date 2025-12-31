@@ -55,6 +55,9 @@ export class LoanService {
             entry.remarks = remarks;
             entry.currentLocation = 'Recovery';
             entry.status = 'With Recovery';
+            // Sale Notice Return: Recovery has 10 days
+            entry.recoveryDeadline = new Date();
+            entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 10);
 
             entry.history.push({
                 location: 'Legal',
@@ -82,9 +85,9 @@ export class LoanService {
             entry.currentLocation = 'Legal';
             entry.status = 'With Legal';
 
-            // Set 5 days deadline for Legal to vet sale notice (can be adjusted)
+            // Sale Notice: Legal has 20 days
             entry.legalDeadline = new Date();
-            entry.legalDeadline.setDate(entry.legalDeadline.getDate() + 5);
+            entry.legalDeadline.setDate(entry.legalDeadline.getDate() + 20);
 
             entry.history.push({
                 location: 'Recovery',
@@ -301,7 +304,9 @@ export class LoanService {
             entry.roValuationFileName = roValuationFileName;
             entry.remarks = remarks || '';
             entry.currentLocation = 'Division';
-            entry.status = 'Completed';
+            entry.status = 'Pending'; // 13(4) Final Stage: Division has 7 days
+            entry.deadlineDate = new Date();
+            entry.deadlineDate.setDate(entry.deadlineDate.getDate() + 7);
             entry.history.push({
                 location: 'RODivision',
                 timestamp: new Date(),
@@ -324,7 +329,10 @@ export class LoanService {
             entry.minutesFileName = minutesFileName;
             entry.reservePrice = reservePrice;
             entry.status = 'Pending';
-            entry.currentLocation = 'Recovery'; // Sends to Recovery Cell
+            entry.currentLocation = 'Recovery';
+            // Sale Notice Start: Recovery has 15 days
+            entry.recoveryDeadline = new Date();
+            entry.recoveryDeadline.setDate(entry.recoveryDeadline.getDate() + 15);
             entry.history.push({
                 location: 'Division',
                 timestamp: new Date(),
@@ -349,9 +357,10 @@ export class LoanService {
             entry.remarks = remarks || '';
             entry.regionalOffice = regionalOffice;
             entry.currentLocation = regionalOffice as 'RegionalOffice1' | 'RegionalOffice2';
-            // Set 8 days deadline for Regional processing
+            // Regional Office Deadline: 8 days (13(2)) or 30 days (13(4))
+            const is134 = entry.sectionType === '13(4)';
             entry.regionalDeadline = new Date();
-            entry.regionalDeadline.setDate(entry.regionalDeadline.getDate() + 8);
+            entry.regionalDeadline.setDate(entry.regionalDeadline.getDate() + (is134 ? 30 : 8));
             entry.history.push({
                 location: entry.currentLocation,
                 timestamp: new Date(),
@@ -370,9 +379,9 @@ export class LoanService {
             entry.currentLocation = 'RODivision';
             entry.status = 'With RO';
 
-            // Set 15 days deadline for RO to publish notice
+            // Set 30 days (Final) for RO to publish notice
             entry.roDeadline = new Date();
-            entry.roDeadline.setDate(entry.roDeadline.getDate() + 15);
+            entry.roDeadline.setDate(entry.roDeadline.getDate() + 30);
 
             entry.history.push({
                 location: 'Recovery',
